@@ -16,6 +16,10 @@ def set_db():
         g.db = couch[os.getenv("SILS_CLOUDANT_DB")]
         g.api_root = "/api"
 
+@app.errorhandler(500)
+def internal_error(exception):
+	app.logger.exception(exception)
+	return render_template('500.html', 500)
 
 
 @app.route('/')
@@ -30,7 +34,6 @@ def show_text(text_id):
         return render_template(text_id+".html")
     except TemplateNotFound:
         abort(404, "Whoops, we can't find that...maybe you typed the name wrong?")
-		
 
 
 @app.route("/store")
