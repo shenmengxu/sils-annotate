@@ -1,10 +1,5 @@
 var enableAnnotation = true
 $(document).ready(function(){
-
-    // add icons
-  $("head link[rel='stylesheet']").last().after("<link rel='stylesheet' href='//netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css' type='text/css' media='screen'>");
-
-
   // mark text containers
     $("p,h1,h2,h3,h4,h5,h6").addClass("text-container snippets")
 
