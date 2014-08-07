@@ -9,17 +9,19 @@ couch = couchdb.Server(url=os.getenv("SILS_CLOUDANT_URL"))
 
 @app.before_request
 def set_db():
-    if "sandbox" in request.url:
-        g.db = couch["sils-annotate-sandbox"]  # hardcoded for now...
-        g.api_root = "/sandbox/api"
-    else:
-        g.db = couch[os.getenv("SILS_CLOUDANT_DB")]
-        g.api_root = "/api"
+    g.db = couch["annotations-with-position"]
+    g.api_root = "/api"
+    #if "sandbox" in request.url:
+    #    g.db = couch["sils-annotate-sandbox"]  # hardcoded for now...
+    #    g.api_root = "/sandbox/api"
+    #else:
+    #    g.db = couch[os.getenv("SILS_CLOUDANT_DB")]
+    #    g.api_root = "/api"
 
 @app.errorhandler(500)
 def internal_error(exception):
-	app.logger.exception(exception)
-	return render_template('500.html', 500)
+    app.logger.exception(exception)
+    return render_template('500.html', 500)
 
 
 @app.route('/')
@@ -45,6 +47,22 @@ def store_root():
 @app.route("/sandbox/api/search")
 def search():
     textId = request.args.get("textId")
+    limit = request.args.get("limit")
+    # Limit doesn't work quite right here because if you only pull back the first 10 or 20
+    # they may be completely at the bottom...is their a way to group or order by document *position*
+    # rather than simply ID (which takes into account time, rather than position)???
+    '''
+    "ranges": [                                # list of ranges covered by annotation (usually only one entry)
+        {
+          "start": "/p[69]/span/span",           # (relative) XPath to start element
+          "end": "/p[70]/span/span",             # (relative) XPath to end element
+          "startOffset": 0,                      # character offset within start element
+          "endOffset": 120                       # character offset within end element
+        }
+      ],
+    order by ranges[0].start?
+    '''    
+    #view = g.db.view("main/by_textId", None, limit=limit)
     view = g.db.view("main/by_textId")
 
     matches = view[textId]
@@ -61,6 +79,10 @@ def search():
     resp = make_response(json.dumps(ret, indent=4), 200)
     resp.mimetype = "application/json"
     return resp
+
+# @app.route("/api/save", methods=["POST"])
+# def save_annotations():
+#    return resp
 
 @app.route("/api/annotations", methods=["POST"])
 @app.route("/sandbox/api/annotations", methods=["POST"])

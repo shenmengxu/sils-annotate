@@ -118,6 +118,19 @@ Annotator.Plugin.Store = (function(_super) {
   Store.prototype._onLoadAnnotations = function(data) {
     if (data == null) data = [];
     this.annotations = data;
+    
+    //for(var index in this.annotations){
+      /*var annotation = this.annotations[0];
+      
+      var highlights = annotation.highlights;
+      console.log(annotation, annotation.highlights);
+      if (highlights) {
+        console.log(highlights[0]);
+      } else {
+        console.log("no highlights");
+      }*/
+    //}
+    
     return this.annotator.loadAnnotations(data.slice());
   };
 

@@ -77,18 +77,23 @@ $(document).ready(function(){
         annotationData: {
             'textId': textId,
             'userId': userId
+            //'viewportOffset': $(annotation).offset().top
+            //then load all annotations where viewportOffset < $(window).height()
         }
 
         // This will perform a "search" action rather than "read" when the plugin
         // loads. Will request the last 20 annotations for the current url.
         // eg. /store/endpoint/search?limit=20&uri=http://this/document/only
         ,loadFromSearch: {
-            'limit': 20,
+            'limit': 0,
             'textId':textId
         }
     });
-
-    content.annotator('addPlugin', "Scrollbar")
-
-
+    
+    content.annotator('addPlugin', "Scrollbar");
+    var store = new Annotator.Plugin.Store;
+    console.log(Annotator.plugins['Store'].dumpAnnotations());
+    /*content.annotator().subscribe("annotationEditorShown", function(editor, annotation){
+      console.log("Shown: ", editor, annotation);
+    });*/
 })
