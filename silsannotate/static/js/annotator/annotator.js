@@ -413,7 +413,7 @@ Annotator = (function(_super) {
 
     if (editorIsOpen) return true
 
-    console.log("checking for end of selectin")
+//console.log("checking for end of selection")
 
     var container, range, _i, _len, _ref;
     this.mouseIsDown = false;

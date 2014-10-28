@@ -9,14 +9,14 @@ couch = couchdb.Server(url=os.getenv("SILS_CLOUDANT_URL"))
 
 @app.before_request
 def set_db():
-    g.db = couch["annotations-with-position"]
-    g.api_root = "/api"
-    #if "sandbox" in request.url:
-    #    g.db = couch["sils-annotate-sandbox"]  # hardcoded for now...
-    #    g.api_root = "/sandbox/api"
-    #else:
-    #    g.db = couch[os.getenv("SILS_CLOUDANT_DB")]
-    #    g.api_root = "/api"
+    #g.db = couch["annotations-with-position"]
+    #g.api_root = "/api"
+    if "sandbox" in request.url:
+        g.db = couch["sils-annotate-sandbox"]  # hardcoded for now...
+        g.api_root = "/sandbox/api"
+    else:
+        g.db = couch[os.getenv("SILS_CLOUDANT_DB")]
+        g.api_root = "/api"
 
 @app.errorhandler(500)
 def internal_error(exception):
@@ -49,7 +49,7 @@ def search():
     textId = request.args.get("textId")
     limit = request.args.get("limit")
     # Limit doesn't work quite right here because if you only pull back the first 10 or 20
-    # they may be completely at the bottom...is their a way to group or order by document *position*
+    # they may be completely at the bottom...is there a way to group or order by document *position*
     # rather than simply ID (which takes into account time, rather than position)???
     '''
     "ranges": [                                # list of ranges covered by annotation (usually only one entry)

@@ -1,3 +1,4 @@
+console.time("silsannotate.js document ready");
 var enableAnnotation = true
 $(document).ready(function(){
   // mark text containers
@@ -54,9 +55,6 @@ $(document).ready(function(){
           "</div>" +
         "</div>")
 
-
-
-
     var url = window.location.pathname
     var cleanUrl = url.replace("sandbox/", "")
     var textId = cleanUrl.split("/")[2]
@@ -69,6 +67,7 @@ $(document).ready(function(){
     var userId = m[1]
 
     var content = $(document.body).annotator();
+
     content.annotator('addPlugin', 'Store', {
         // The endpoint of the store on your server.
         prefix: apiRoot, // set at document level by Flask
@@ -90,10 +89,10 @@ $(document).ready(function(){
         }
     });
     
+//addPlugin Store happens in about 7 ms
+
     content.annotator('addPlugin', "Scrollbar");
-    var store = new Annotator.Plugin.Store;
-    console.log(Annotator.plugins['Store'].dumpAnnotations());
-    /*content.annotator().subscribe("annotationEditorShown", function(editor, annotation){
-      console.log("Shown: ", editor, annotation);
-    });*/
+    //annotations are stored on the $.fn.data for each highlight
+    //$('.annotator-hl').data("annotation");
+console.timeEnd("silsannotate.js document ready");    
 })

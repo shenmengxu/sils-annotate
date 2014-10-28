@@ -45,8 +45,7 @@ Annotator.Editor = (function(_super) {
   };
 
   Editor.prototype.hide = function(event) {
-
-    console.log("hide!")
+//console.log("hide!")
     util.preventEventDefault(event);
     this.element.addClass(this.classes.hide);
     return this.publish('hide');

@@ -45,7 +45,7 @@ Annotator.Plugin.Scrollbar = (function(_super) {
 
       var userId = m[1]
 
-      console.log("user id!", userId)
+      //console.log("user id!", userId)
 
 
 
@@ -108,7 +108,7 @@ Annotator.Plugin.Scrollbar = (function(_super) {
 
 
         var changeGlobalDisplayState = function(newState){
-
+console.time("changeGlobalDisplayState to " + newState);
             if ($("#menubar a.hidden").hasClass("active")) enableDisableAnnotation()
 
 
@@ -134,6 +134,7 @@ Annotator.Plugin.Scrollbar = (function(_super) {
             else {
                 $("#menubar ul.enable-disable-annotation a").removeClass("disabled")
             }
+console.timeEnd("changeGlobalDisplayState to " + newState);            
         }
 
         var renderAnno = function(anno) {
@@ -245,7 +246,7 @@ Annotator.Plugin.Scrollbar = (function(_super) {
         }
 
         var writeAnnotationTexts = function() {
-
+console.time("writeAnnotationTexts");
             var textContainerContents$ = $(
                 "<div class='anno-display'>"
                     + "<ul class='container-states'>"
@@ -285,7 +286,7 @@ Annotator.Plugin.Scrollbar = (function(_super) {
 
                 })
 
-
+console.timeEnd("writeAnnotationTexts");
         }
 
         var redrawAnnoPane = function(container$) {
@@ -296,15 +297,18 @@ Annotator.Plugin.Scrollbar = (function(_super) {
 
 
         var redrawAllAnnoPanes = function(){
+console.time("redrawAllAnnoPanes");            
             textContainters$.each(function(){
                 redrawAnnoPane($(this))
             })
             drawScrollbarBlocks()
             showCounts()
+console.timeEnd("redrawAllAnnoPanes");                   
         }
 
 
         var drawScrollbarBlocks = function(){
+console.time("drawScrollbarBlocks");               
             var scrollbarScaleFactor = $("#scrollbar").height() / $("html").height()
             $("#scrollbar").empty()
             $("span.annotator-hl").each(function(){
@@ -319,7 +323,9 @@ Annotator.Plugin.Scrollbar = (function(_super) {
                 )
                     .addClass(idClassName)
                     .appendTo("#scrollbar")
+                console.log(idClassName);
             })
+console.timeEnd("drawScrollbarBlocks");               
         }
 
         var setHlClassNames = function() {
