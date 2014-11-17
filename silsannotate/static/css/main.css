@@ -327,6 +327,15 @@ body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li spa
   font-weight: bold;
   margin-right: 4px;
 }
+
+/*
+ * Testing scrollbar on annotation panes. 
+body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border:1px solid green;
+}*/
+
 #scrollbar {
   width: 24px;
   position: fixed;

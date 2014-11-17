@@ -323,7 +323,6 @@ console.time("drawScrollbarBlocks");
                 )
                     .addClass(idClassName)
                     .appendTo("#scrollbar")
-                console.log(idClassName);
             })
 console.timeEnd("drawScrollbarBlocks");               
         }

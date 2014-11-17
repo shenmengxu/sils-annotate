@@ -2,9 +2,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-window._start;
-window._end;
-
 //TODO: cache all DOM element selections
 
 Annotator.Plugin.Scrollbar = (function(_super) {
@@ -22,19 +19,11 @@ Annotator.Plugin.Scrollbar = (function(_super) {
 
     Scrollbar.prototype.updateScrollbar = function(annotations) {
 
-//logs 204, when there are 202 annotations??
-//console.log(annotations, annotations.length);
 //expose this for debugging purposes
-window.allAnnotations = annotations;
+        //window.allAnnotations = annotations;
 
-//for(var i = 0; i < annotations.length; i++){
-    //if (annotations[i].userId.length < 1) {
-//console.log(annotations[i]);
-    //}
-//}
-
-        var userToShow = false
-        var focusedIds = {}
+        var userToShow = false;
+        var focusedIds = {};
 
         var textContainers$ = $(".text-container");
         var displayStyles = ["hidden", "icons", "snippets", "full"];
@@ -65,7 +54,10 @@ window.allAnnotations = annotations;
          **********************************************************************/
 
         var showCounts = function(){
-            var annos = getAnnotationsFromSetOfHls($("html"))
+            var annos = getAnnotationsFromSetOfHls($("html"));
+//off by 2-6
+//console.log("window.allAnnotations count", window.allAnnotations.length);
+//console.log("showCounts", annos.length);
             $(".submenu.annotations-count span.num").text(annos.length)
     
             var annosByUser = _.groupBy(annos, function(anno){return anno.userId})
@@ -76,41 +68,39 @@ window.allAnnotations = annotations;
             });
             
             $(".submenu.this-user-annotations-count span.num").text(_.size(annosByThisUser))
-        } //end showCounts
+        }; //end showCounts
 
         var handleGlobalControls = function() {
             $("#menubar a.display-style").click(function(){
                 var newState = _.intersection(displayStyles, this.className.split(" "))[0]
                 changeGlobalDisplayState(newState)
-            })
+            });
 
             $("#menubar ul.enable-disable-annotation a").click(function(){
                 if ($(this).hasClass("disabled")){
                     return false
                 }
                 enableDisableAnnotation();
-            })
+            });
 
             $(".submenu.enable-highlights").click(function(){
-//              $(".text-container").toggleClass("highlights-hidden")
                 $(".annotator-hl").each(function(){
                     if ($(this).data().annotation.userId != userId) {
-                      $(this).toggleClass("hidden")
+                        $(this).toggleClass("hidden");
                     }
                 });
 
               $(this).find("a").toggleClass("active").toggleClass("ready")
-            })
-        }
+            });
+        }; //end handleGlobalControls
 
 
         var enableDisableAnnotation = function() {
-//console.log("enabling/disabling annotations")
             enableAnnotation = !enableAnnotation
             $("#menubar ul.enable-disable-annotation a")
                 .toggleClass("active")
                 .toggleClass("ready");
-        }
+        };
 
 
 
@@ -121,16 +111,8 @@ console.time("changeGlobalDisplayState to " + newState);
                 enableDisableAnnotation();
             }
    
-/*         
-if (newState == "hidden") {
-    console.log("Hiding annotations");
-    $('body').addClass('hide-annotations');
-    //return;   
-} else {
-    $('body').removeClass('hide-annotations');
-}*/
-            $('body').removeClass(displayStyles.join(" "))
-                .addClass(newState)
+            //$('body').removeClass(displayStyles.join(" "))
+            //   .addClass(newState);
 
             $("#menubar a.display-style")
                 .removeClass("active")
@@ -143,21 +125,20 @@ if (newState == "hidden") {
                 .removeClass(displayStyles.join(" "))
                 .addClass(newState);
 
-//guessing this is where the majority of slowdown is
-            redrawAllAnnoPanes()
+            redrawAllAnnoPanes();
 
             // if annotations are hidden, you can't make new ones
             if ($("#menubar a.hidden").hasClass("active")) {
-                $("#menubar ul.enable-disable-annotation a").addClass("disabled")
+                $("#menubar ul.enable-disable-annotation a").addClass("disabled");
                 if (enableAnnotation) {
-                    enableDisableAnnotation()
+                    enableDisableAnnotation();
                 }
             }
             else {
-                $("#menubar ul.enable-disable-annotation a").removeClass("disabled")
-            }
+                $("#menubar ul.enable-disable-annotation a").removeClass("disabled");
+            }            
 console.timeEnd("changeGlobalDisplayState to " + newState);            
-        }
+        }; //end changeGlobalDisplayState
 
         var renderAnno = function(anno) {
             if (userToShow && userToShow != anno.userId) return false
@@ -168,13 +149,14 @@ console.timeEnd("changeGlobalDisplayState to " + newState);
                                 + idClass
                                 + ' ' + anno.userId
                                 + '"><span class="text"><span class="username">'
-                                + capitaliseFirstLetter(anno.userId)
+                                + (anno.userId)
                                 + '</span></span><div class="mask"></div></li>')
             var userIconUrl = "/static/img/users/" + anno.userId + ".png"
             var userIcon = $('<img src="'+ userIconUrl +'">')
             annoLi$.prepend(userIcon)
             annoLi$.prepend("<div class='more-indicator'>+</div>")
             annoLi$.find("span.text").append(anno.text)
+//TODO: can be event delegated from $(document)
             annoLi$.hover(
                 function(){
                     $("."+idClass)
@@ -182,8 +164,8 @@ console.timeEnd("changeGlobalDisplayState to " + newState);
                         .andSelf()
                         .addClass("active")
                         .parents("ul.sils-annos")
-                        .addClass("active")
-//console.log("hoving to activate idClass", idClass)
+                        .addClass("active");
+//console.log("hovering to activate idClass", idClass)
                 },
                 function(){
                     $("."+idClass)
@@ -191,9 +173,10 @@ console.timeEnd("changeGlobalDisplayState to " + newState);
                         .andSelf()
                         .removeClass("active")
                         .parents("ul.sils-annos")
-                        .removeClass("active")                }
+                        .removeClass("active");
+                }
             )
-            return annoLi$
+            return annoLi$;
 
         }
 
@@ -260,14 +243,12 @@ console.timeEnd("changeGlobalDisplayState to " + newState);
         }
 
         var getAnnotationsFromSetOfHls = function(elem$) {
+//console.time("getAnnotationsFromSetOfHls");
           var annos = {}
-//var start = (new Date).getTime();
           elem$.find(".annotator-hl").each(function(){
               annos[readIdFromClassStr(this.className)] = $(this).data().annotation
           });
-//var end = (new Date).getTime();          
-//console.log("getAnnotationsFromSetOfHls: " + (end - start) + "ms");
-
+//console.timeEnd("getAnnotationsFromSetOfHls");
           return _.values(annos)
         }
 //takes up to half a second with more than 1000 annotations
@@ -293,12 +274,12 @@ console.time("writeAnnotationTexts");
                     this.className.split(" ")
                 )[0];
 
-                $('body').removeClass(displayStyles.join(" "))
-                    .addClass(newState);
-                /*parentContainer$
+                //$('body').removeClass(displayStyles.join(" "))
+                //    .addClass(newState);
+                parentContainer$
                     .removeClass(displayStyles.join(" "))
-                    .addClass(newState)
-                */    
+                    .addClass(newState);
+                    
                 redrawAnnoPane(parentContainer$);
             });
 
@@ -325,11 +306,14 @@ console.timeEnd("writeAnnotationTexts");
 //body div.annotator-wrapper .text-container div.anno-display
         var redrawAnnoPane = function(container$) {
 //console.log("redrawAnnoPane called");
+
+//Uncomment to test the scrollbar on annotation panes. 
+//return; 
             var annoListHeight = container$.find("ul.sils-annos").height()
             if (annoListHeight > 0){
                 annoListHeight += 30;
             }
-            container$.css("min-height", annoListHeight + "px")
+            container$.css("min-height", annoListHeight + "px");
         }
 
         var redrawAllAnnoPanes = function(){  
@@ -351,9 +335,64 @@ console.time("redrawAllAnnoPanes");
 console.timeEnd("redrawAllAnnoPanes");                 
             drawScrollbarBlocks();             
             //fetchScrollbar();
-//drawScrollbarBlocks runs in 409ms
 //showCounts should not need to be called every time
 //showCounts()    
+        }
+
+        var drawScrollbarBlocksCanvas = function(){
+console.time("drawScrollbarBlocks");
+            var scrollbar = $('<canvas id="scrollbar" width="24" height="' + screen.height + '"></canvas>');
+            $(document.body).append(scrollbar);
+            
+            var scrollbarScaleFactor = screen.height / $("html").height();
+            
+            var canvas = scrollbar[0];//document.getElementById('scrollbar');
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = "yellow";
+            
+            //ctx.fillRect(0, 50, 24, 20);
+            
+            var annotations = $("span.annotator-hl");
+
+            //return;
+            for(var i = 0; i < annotations.length; i++){
+                var elem = annotations[i];
+                var elem$ = $(elem);
+                var top = (elem$.offset().top * scrollbarScaleFactor);
+                var height = (elem$.height() * scrollbarScaleFactor);
+                
+                ctx.fillRect(0, top, 50, height);
+            }
+console.timeEnd("drawScrollbarBlocks");              
+        }
+
+        var drawGroupedScrollbarBlocks = function(){
+console.time("drawScrollbarBlocks");       
+            var scrollbarScaleFactor = $("#scrollbar").height() / $("html").height()
+            $("#scrollbar").empty();
+
+            var fragment = document.createDocumentFragment();
+//expensive iteration
+            //var annotations = $("span.annotator-hl");
+            var annotationPanes = $(".sils-annos:not(:empty)");            
+            
+            for(var i = 0; i < annotationPanes.length; i++){
+                var elem = annotationPanes[i];
+                var elem$ = $(elem);
+                //var idClassName = readIdFromClassStr(elem.className)
+                $("<div class='scrollbar-block'></div>")
+                    .css(
+                    {
+                        top: (elem$.offset().top * scrollbarScaleFactor) +"px",
+                        height: (elem$.height() * scrollbarScaleFactor) + "px"
+                    }
+                )
+                //.addClass(idClassName)
+                .appendTo(fragment);
+            }
+            
+            $('#scrollbar').append(fragment);
+console.timeEnd("drawScrollbarBlocks");   
         }
 
         var drawScrollbarBlocks = function(){
@@ -364,6 +403,8 @@ console.time("drawScrollbarBlocks");
             var fragment = document.createDocumentFragment();
 //expensive iteration
             var annotations = $("span.annotator-hl");
+//annotations.length here is many times more than the count of annotations
+console.log("annotations count: ", annotations.length);            
             for(var i = 0; i < annotations.length; i++){
                 var elem = annotations[i];
                 var elem$ = $(elem);
@@ -383,15 +424,6 @@ console.time("drawScrollbarBlocks");
 console.timeEnd("drawScrollbarBlocks");   
         }
 
-/*        
-        var fetchScrollbar = function(){
-console.time("fetchScrollbar");            
-            $.get('/static/a1-snippets-scrollbar.html', function(data){
-                $('#menubar').before(data);
-                console.timeEnd("fetchScrollbar");
-            });
-        }
-*/
         //can this be done at the time the annotations are added to the DOM the first time around?
         var setHlClassNames = function() {
             $("span.annotator-hl").each(function(){
@@ -438,9 +470,14 @@ console.time("fetchScrollbar");
          **********************************************************************/
 
 
-//TODO: this can be rewritten to not rely on passing "this"
-//Also, this should use event delgation on a parent element, rather than each individual annotator-hl
-//Speed test this version with event delegated from parent
+        //Rewritten to utilize event delegation; original code below it.
+        $(document).on("mouseenter", ".annotator-hl", function(e){
+            annoFocus(this);
+            
+        }).on("mouseleave", ".annotator-hl", function(e){
+            annoBlur(this);            
+        });
+        /*
         $(".annotator-hl").hover(
             function(){
                 annoFocus(this);
@@ -448,7 +485,7 @@ console.time("fetchScrollbar");
             function(){
                 annoBlur(this)
             }
-        )
+        );*/
 
         setHlClassNames();
         writeAnnotationTexts();
