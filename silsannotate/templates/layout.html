@@ -17,23 +17,19 @@
      
      
         <!-- stuff for the off-the-shelf annotator.js -->
-     
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/preamble.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/class.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/console.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/extensions.js') }}"></script>
-     
-     
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/range.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/annotator.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/plugin/store.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/plugin/scrollbar.old.js') if request.args.get('old') else url_for('static', filename='js/annotator/plugin/scrollbar.js') }}"></script>
-     
-     
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/widget.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/editor.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/viewer.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/notification.js') }}"></script>
+        
+        <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/plugin/scrollbar.old.js') if request.args.get('old') else url_for('static', filename='js/annotator/plugin/scrollbar.js') }}"></script>        
         <script type="text/javascript" src="{{ url_for('static', filename='js/silsannotate.js') }}"></script>        
     </head>
     <body>
