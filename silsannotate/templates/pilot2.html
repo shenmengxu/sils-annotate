@@ -1,44 +1,5 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" class="no-js no-jr">
-<head>
-   <title>Pilot Test 2</title>
-   <meta charset="utf-8">
-
-   <!-- custom stuff for sils-annotator -->
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/annotator.css') }}" />
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.old.css') if request.args.get('old') else url_for('static', filename='css/main.css') }}" />
-   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" media="screen">
-
-   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-   <!--<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.9.1.js') }}"></script>-->
-   <script type="text/javascript" src="{{ url_for('static', filename='js/underscore.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.scrollTo-1.4.3.1-min.js') }}"></script>
-
-   <script type="text/javascript"> apiRoot = "{{ g.api_root }}"</script>
-
-
-   <!-- stuff for the off-the-shelf annotator.js -->
-
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/preamble.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/class.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/console.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/extensions.js') }}"></script>
-
-
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/range.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/annotator.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/plugin/store.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/plugin/scrollbar.old.js') if request.args.get('old') else url_for('static', filename='js/annotator/plugin/scrollbar.js') }}"></script>
-
-
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/widget.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/editor.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/viewer.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/notification.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/silsannotate.js') }}"></script>
-
-</head>
-<body>
+{% extends "layout.html" %}
+{% block body %}
    <h1>Pilot Test Article 2 </h1>
    <h1>To Grow in Wisdom: Vannevar Bush, Information Overload, and the Life of Leisure </h1>
    <p>David M. Levy </p>
@@ -136,5 +97,4 @@ Are there other models in our culture, either current or prior, that might help 
 <p id="ref13">[13] Smith, L. C. Memex as an Image of Potentiality Revisited. In From Memex to Hypertext: Vannevar Bush and the Mind's Machine. Nyce, J.M. and Kahn, P., eds. Academic Press, Inc., Boston, 1991, 261-286.</p>
 <p id="ref14">[14] Zachary, G. P. Endless Frontier: Vannevar Bush, Engineer of the American Century. The Free Press, New York, 1997.</p>
 
-
-</body>
+{% endblock %}

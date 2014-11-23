@@ -1,44 +1,5 @@
-﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" class="no-js no-jr">
-<head>
-   <title>Article 4</title>
-   <meta charset="utf-8">
-
-   <!-- custom stuff for sils-annotator -->
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/annotator.css') }}" />
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.old.css') if request.args.get('old') else url_for('static', filename='css/main.css') }}" />
-   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" media="screen">
-
-   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-   <!--<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.9.1.js') }}"></script>-->
-   <script type="text/javascript" src="{{ url_for('static', filename='js/underscore.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.scrollTo-1.4.3.1-min.js') }}"></script>
-
-   <script type="text/javascript"> apiRoot = "{{ g.api_root }}"</script>
-
-
-   <!-- stuff for the off-the-shelf annotator.js -->
-
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/preamble.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/class.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/console.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/extensions.js') }}"></script>
-
-
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/range.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/annotator.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/plugin/store.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/plugin/scrollbar.old.js') if request.args.get('old') else url_for('static', filename='js/annotator/plugin/scrollbar.js') }}"></script>
-
-
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/widget.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/editor.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/viewer.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/annotator/notification.js') }}"></script>
-   <script type="text/javascript" src="{{ url_for('static', filename='js/silsannotate.js') }}"></script>
-
-</head>
-<body>
+﻿{% extends "layout.html" %}
+{% block body %}
    <h1>Public sharing of research datasets: A pilot study of associations</h1>
    <p>Heather A. Piwowar, Wendy W. Chapman</p>
 
@@ -270,6 +231,4 @@
 
    <p id="55">Warlick, S. E., & Vaughan, K. T. (2007). Factors influencing publication choice: Why faculty choose open access. Biomedical Digitital Libraries, 4(1), 1.</p>
 
-
-   <!-- Paste the html for article 2 here -->
-</body>
+{% endblock %}
