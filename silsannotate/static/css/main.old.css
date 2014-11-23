@@ -14,6 +14,7 @@ body .menubar {
 body .menubar.menubar-left {
   left: 35px;
   text-align: left;
+  width:310px;
 }
 body .menubar.menubar-left .submenu {
   float: left;
