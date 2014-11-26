@@ -4,53 +4,52 @@ from flask import render_template, request, make_response, g, abort
 from jinja2 import TemplateNotFound
 from silsannotate import app
 
-
 couch = couchdb.Server(url=os.getenv("SILS_CLOUDANT_URL"))
 
 @app.before_request
 def set_db():
-    #g.db = couch["annotations-with-position"]
-    #g.api_root = "/api"
-    if "sandbox" in request.url:
-        g.db = couch["sils-annotate-sandbox"]  # hardcoded for now...
-        g.api_root = "/sandbox/api"
+    if "study" in request.url:
+        # For the study in 2014, this database should not change; if it does,
+        # there is a file called sils-annotate-sandbox-backup-17-11-2014 that is a copy of it
+        g.db = couch["sils-annotate-sandbox-17-11-2014"]  
+    elif "release" in request.url:
+        # This is a copy of the DB from the 2014 study, but it can be altered in
+        # the new release
+        g.db = couch["sils-annotate-sandbox-2"] 
     else:
+        # Default to "sils-annotate-sandbox"
         g.db = couch[os.getenv("SILS_CLOUDANT_DB")]
-        g.api_root = "/api"
+    
+    g.api_root = "/api"
 
 @app.errorhandler(500)
 def internal_error(exception):
     app.logger.exception(exception)
     return render_template('500.html', 500)
 
-
 @app.route('/')
-@app.route('/sandbox')
 def hello_world():
     return 'Hello World!'
 
-@app.route('/text/<text_id>')
-@app.route('/sandbox/text/<text_id>')
-def show_text(text_id):
+@app.route('/<release_name>/<release_number>/<text_id>')
+def show_text(release_name, release_number, text_id):
     try:
-        return render_template(text_id+".html")
+        return render_template("{0}/{1}/{2}.html".format(release_name, release_number, text_id))    
     except TemplateNotFound:
         abort(404, "Whoops, we can't find that...maybe you typed the name wrong?")
 
-
 @app.route("/store")
-@app.route("/sandbox/store")
 def store_root():
     pass
 
 @app.route("/api/search")
-@app.route("/sandbox/api/search")
 def search():
     textId = request.args.get("textId")
     limit = request.args.get("limit")
     # Limit doesn't work quite right here because if you only pull back the first 10 or 20
     # they may be completely at the bottom...is there a way to group or order by document *position*
     # rather than simply ID (which takes into account time, rather than position)???
+    #view = g.db.view("main/by_textId", None, limit=limit)
     '''
     "ranges": [                                # list of ranges covered by annotation (usually only one entry)
         {
@@ -62,7 +61,6 @@ def search():
       ],
     order by ranges[0].start?
     '''    
-    #view = g.db.view("main/by_textId", None, limit=limit)
     view = g.db.view("main/by_textId")
 
     matches = view[textId]
@@ -80,12 +78,7 @@ def search():
     resp.mimetype = "application/json"
     return resp
 
-# @app.route("/api/save", methods=["POST"])
-# def save_annotations():
-#    return resp
-
 @app.route("/api/annotations", methods=["POST"])
-@app.route("/sandbox/api/annotations", methods=["POST"])
 def post_new_annotation():
     doc = request.json
     doc["_id"] = shortuuid.uuid()
