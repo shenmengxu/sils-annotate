@@ -12,7 +12,7 @@ def set_db():
         # For the study in 2014, this database should not change; if it does,
         # there is a file called sils-annotate-sandbox-backup-17-11-2014 that is a copy of it
         g.db = couch["sils-annotate-sandbox-17-11-2014"]  
-    elif "release" in request.url:
+    elif "release/2" in request.url:
         # This is a copy of the DB from the 2014 study, but it can be altered in
         # the new release
         g.db = couch["sils-annotate-sandbox-2"] 
