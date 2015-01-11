@@ -13,7 +13,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "hashicorp/precise64"
 
   config.vm.provision :shell, path: "requirements.sh"
-  config.vm.network :forwarded_port, host: 1234, guest: 80
   config.vm.network :forwarded_port, host: 5000, guest: 5000
 
   # Disable automatic box update checking. If you disable this, then

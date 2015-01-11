@@ -189,7 +189,7 @@ console.timeEnd("changeGlobalDisplayState to " + newState);
                 var thisId = readIdFromClassStr(this.className)
                 focusedIds[thisId] = $('.annotator-hl.'+thisId).text().length
             })
-
+//console.log("elems: ", elems)
             activateShortestId()
 
             return false
@@ -199,6 +199,7 @@ console.timeEnd("changeGlobalDisplayState to " + newState);
             // find which ids have the shortest length (array b/c ties are allowed)
             var shortestIds = []
             var shortestLenSoFar = Infinity
+//console.log(focusedIds);
             _.each(focusedIds, function(len, id){
                 if (len < shortestLenSoFar) {
                     shortestLenSoFar = len
@@ -208,7 +209,7 @@ console.timeEnd("changeGlobalDisplayState to " + newState);
                     shortestIds.push(id)
                 }
             })
-
+//console.log(shortestIds);
 
             $(".text-container .active, #scrollbar .active").removeClass("active")
             if (!shortestIds.length) return false

@@ -408,7 +408,7 @@ Annotator = (function(_super) {
   };
 
   Annotator.prototype.checkForEndSelection = function(event) {
-
+console.log("checkForEndSelection::editorIsOpen",editorIsOpen );
     if (!enableAnnotation) return true
 
     if (editorIsOpen) return true
@@ -473,8 +473,33 @@ Annotator = (function(_super) {
   };
 
   Annotator.prototype.onAdderClick = function(event) {
-
-
+/*
+    var annotation, cancel, cleanup, position, save,
+      _this = this;
+    if (event != null) {
+      event.preventDefault();
+    }
+    position = this.adder.position();
+    this.adder.hide();
+    annotation = this.setupAnnotation(this.createAnnotation());
+    $(annotation.highlights).addClass('annotator-hl-temporary');
+    save = function() {
+      cleanup();
+      $(annotation.highlights).removeClass('annotator-hl-temporary');
+      return _this.publish('annotationCreated', [annotation]);
+    };
+    cancel = function() {
+      cleanup();
+      return _this.deleteAnnotation(annotation);
+    };
+    cleanup = function() {
+      _this.unsubscribe('annotationEditorHidden', cancel);
+      return _this.unsubscribe('annotationEditorSubmit', save);
+    };
+    this.subscribe('annotationEditorHidden', cancel);
+    this.subscribe('annotationEditorSubmit', save);
+    return this.showEditor(annotation, position);
+*/
     var highlights, position, r, ranges;
     if (event != null) event.preventDefault();
     position = this.adder.position();
