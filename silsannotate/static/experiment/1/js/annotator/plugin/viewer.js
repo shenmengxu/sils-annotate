@@ -7,6 +7,27 @@ Annotator.prototype.onHighlightMouseover = function(event){
     //console.log(event.target, $(event.target).data("annotation")); 
 };
 
+/*
+    Data sent when adding an annotation:
+    {
+        "ranges":[{"start":"/p[1]",
+        "startOffset":17,
+        "end":"/p[1]",
+        "endOffset":36}],
+        "quote":"Sharon Dyas-Correia",
+        "text":"Read more about the author at http://www.google.com/?s=dyas-correia",
+        "textId":"pilot",
+        "userId":"andy"
+    }
+    
+    Didn't show the new annotation, since that needs to be added
+    
+    "annotationEditorSubmit": "showNewAnnotation"
+    showNewAnnotation will take the data presented by annotationEditorSubmit event and render the new annotation
+    
+    saveHighlight should submit the normal data, but with "text" as null
+*/
+
 Annotator.Plugin.Viewer = (function(_super) {
     __extends(Viewer, _super);
     
@@ -39,15 +60,9 @@ Annotator.Plugin.Viewer = (function(_super) {
     var numberOfAnnotationsByAllUsers = 0;
     var displayMode = "snippets";
     
-    //cache original functions for enabling/disabling annotations later
-    //var checkForStartSelection = Annotator.prototype.checkForStartSelection;
-    //var checkForEndSelection = Annotator.prototype.checkForEndSelection;
-    
     Viewer.prototype.events = {
         "annotationsLoaded": "showAnnotations",
-        //".annotation-menubar .mode-controls input click": "changeInteractiveMode"
-        //".annotator-hl mouseout": "startViewerHideTimer"  
-        //"annotationViewerShown": "viewerOpens
+        "annotationEditorSubmit": "showNewAnnotation"
     };
     
     function getAnnotationIdFromClass(classStr, removePrefix) {
@@ -93,7 +108,6 @@ Annotator.Plugin.Viewer = (function(_super) {
     }
     
     function annotationFocus(annotations) {
-        //if (!enableAnnotation) return false
         // add to the focusedIds array
         $(annotations).each(function(){
             var thisId = getAnnotationIdFromClass(this.className);
@@ -122,7 +136,7 @@ Annotator.Plugin.Viewer = (function(_super) {
             //...should be a better way to do this
             annotations[$(this).data().annotation.id] = $(this).data().annotation;
         });
-        
+     
         return _.values(annotations);
     }    
     
@@ -142,7 +156,7 @@ Annotator.Plugin.Viewer = (function(_super) {
     /**
      *
      */
-    function buildAnnotationContents(annotation){
+    function buildAnnotationContents(annotation){        
         if (annotation.highlights.length < 1 || annotation.ranges.length < 1) {
             //In the "pilot" article, there are 2 annotations with .highlights and .ranges
             //equal to Array[0]. They were not shown originally.
@@ -197,7 +211,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         //this list is chosen based on what makes the most sense in an article format
         textDivisions = $("p,h1,h2,h3,h4,h5,h6");
         
-        $(document.body).append(annotationPanel);
+        $("#container").append(annotationPanel);
         $(document.body).append(menuBar);
         $(document.body).append(infoPanel);
         
@@ -221,17 +235,15 @@ Annotator.Plugin.Viewer = (function(_super) {
             annotationBlur(annotation[0]);
         });
         
-        
-        //attach menubar controls here...not working as part of prototype.events for some reason
-        
         this.showAnnotations = __bind(this.showAnnotations, this);
         this.changeInteractiveMode = __bind(this.changeInteractiveMode, this);
         this.changeDisplayMode = __bind(this.changeDisplayMode, this);
         
-       
+        //attach menubar controls here...not working as part of prototype.events for some reason
         $(document).on("click", ".annotation-menubar .mode-controls input", this.changeInteractiveMode);
         $(document).on("click", ".annotation-menubar .display-controls input", this.changeDisplayMode);
         $(document).on("click", ".annotation-menubar .info-control a", showAnnotationsInfoPanel);
+        $(document).on("click", ".expand-pane", expandAnnotationPane);
         $(document).on("click", hideAnnotationsInfoPanel);
         
         Viewer.__super__.constructor.apply(this, arguments);   
@@ -250,6 +262,11 @@ Annotator.Plugin.Viewer = (function(_super) {
  *
  */
         getCounts(annotations);
+        
+        $("#current-user-annotations-count").text(numberOfAnnotationsByCurrentUser);
+        $("#all-annotations-count").text(numberOfAnnotationsByAllUsers);
+        $("#number-of-annotators").text(numberOfUsers);
+        
         setAnnotationHighlightClassNames();
         
         var annotationPanes = "";
@@ -269,11 +286,13 @@ console.time("Writing annotations");
             //get the annotations in this block for the annotation pane
             var annotations = getAnnotationsFromHighlights($this);
             
-            if (annotations.length > 1) {
+            if (annotations.length > 0) {
                 //build the HTML for annotation pane contents
                 var contents = buildAnnotationPane(annotations);
                 
-                annotationPanes += '<div class="annotation-pane" style="top: ' + textTop + 'px; max-height: ' + maxHeight + 'px;">' + contents + '</div>';
+                annotationPanes += '<div class="annotation-pane" style="top: ' + textTop + 'px; max-height: ' + maxHeight + 'px;">'
+                                        + contents +
+                                    '<a href="#nogo" class="expand-pane">More</a></div>';
             }
         });
         
@@ -322,6 +341,20 @@ console.log("Change display mode from", displayMode, "to", newMode);
         displayMode = newMode;
     };
     
+    function expandAnnotationPane(e){
+        var $this = $(this);
+        var pane = $this.parent('.annotation-pane');
+        var paneMaxHeight = pane.css("max-height");
+
+        if (paneMaxHeight === "none") {
+            $this.text("More");
+            pane.removeClass("active");
+        } else {
+            $this.text("Less");
+            pane.data("maxheight", paneMaxHeight).addClass("active")
+        }
+    }
+    
     /**
      * Show the number of annotations by the current user,
      * show the number of annotations by all users,
@@ -341,7 +374,7 @@ console.log("Change display mode from", displayMode, "to", newMode);
     }
     
     function getCounts(annotations) {
-        annotationsWithHighlights = _.filter(annotations, function(annotation){
+        var annotationsWithHighlights = _.filter(annotations, function(annotation){
             //only count annotations that have a highlight and a range value
             return (annotation.highlights.length > 0 && annotation.ranges.length > 0);
         });

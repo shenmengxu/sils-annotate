@@ -31,6 +31,10 @@ p,h1,h2,h3,h4,h5,h6,
   border-bottom:1px solid green;
 }*/
 
+#container {
+  min-width:1200px;
+}
+
 .annotator-wrapper {
   /* Prevents collapsed margins on first element inside it,
    * which fixes calculating distance from top for
@@ -43,6 +47,7 @@ p,h1,h2,h3,h4,h5,h6,
 .annotation-menubar {
   clear: both;
   width: 100%;
+  min-width:1000px;
   position: fixed;
   left: 0;
   top: 0;
@@ -450,6 +455,20 @@ body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
   border:1px solid #ccc;
   padding:10px 10px 0;
   width:100%;
+  background: #fff;
+  z-index:1000;
+}
+
+#annotation-panel .annotation-pane.active {
+  box-shadow:1px 1px 6px #333;
+  z-index:2000;
+  max-height:none !important;
+}
+
+#annotation-panel .expand-pane {
+  position:absolute;
+  top:0;
+  right:0;
 }
 
 #annotation-panel .annotation-contents {
