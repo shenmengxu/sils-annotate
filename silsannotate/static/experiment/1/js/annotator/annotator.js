@@ -400,7 +400,6 @@ Annotator = (function(_super) {
   };
 
   Annotator.prototype.checkForEndSelection = function(event) {
-//this.publish('annotationEditorShown');    
     var container, range, _i, _len, _ref;
     this.mouseIsDown = false;
     if (this.ignoreMouseup) {

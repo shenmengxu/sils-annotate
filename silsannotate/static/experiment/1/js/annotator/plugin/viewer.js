@@ -3,9 +3,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 //Override the default highlight mouseover behavior
-Annotator.prototype.onHighlightMouseover = function(event){
+/*Annotator.prototype.onHighlightMouseover = function(event){
     //console.log(event.target, $(event.target).data("annotation")); 
-};
+};*/
 
 /*
     Data sent when adding an annotation:
@@ -20,6 +20,12 @@ Annotator.prototype.onHighlightMouseover = function(event){
         "userId":"andy"
     }
     
+    Response looks like:
+    [
+    "R8Ln5NHVGZK8yveSmBF5g9", 
+    "1-189c6a24eb44d26cfb76fc25e3563fbd"
+    ]
+    id is [0], _rev is [1]
     Didn't show the new annotation, since that needs to be added
     
     "annotationEditorSubmit": "showNewAnnotation"
@@ -180,9 +186,15 @@ Annotator.Plugin.Viewer = (function(_super) {
     /**
      *
      */
-    function setAnnotationHighlightClassNames(){
-        //TODO: will caching this selector speed things up any?
-        $("span.annotator-hl").each(function(){
+    function setAnnotationHighlightClassNames(highlightElements){
+        var highlights;
+        
+        if (!highlightElements) {
+            //TODO: will caching this selector speed things up any?
+            highlightElements = $("span.annotator-hl");
+        }
+        
+        highlightElements.each(function(){
             //add an id- class
             var $this = $(this);
             var className = "id-" + $this.data().annotation.id;
@@ -204,6 +216,8 @@ Annotator.Plugin.Viewer = (function(_super) {
      * Plugin constructor. Runs when first instantiated.
      */
     function Viewer(element, options) {
+        Viewer.__super__.constructor.apply(this, arguments);
+
         //create the annotation panel DOM element that will house the annotations
         annotationPanel = $('<div id="annotation-panel"></div>');
         
@@ -214,6 +228,11 @@ Annotator.Plugin.Viewer = (function(_super) {
         $("#container").append(annotationPanel);
         $(document.body).append(menuBar);
         $(document.body).append(infoPanel);
+        
+        console.log(this, this.element);
+        
+//What is going on here? `this` returns a Viewer object, but I can't access any of its properties
+        //$(document).unbind.call(this, "mouseover", onHighlightMouseover);
         
         //binding events elsewhere screws up the context for `this`, which
         //was used by the original code, so stick with the manual document event binding
@@ -236,6 +255,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         });
         
         this.showAnnotations = __bind(this.showAnnotations, this);
+        this.showNewAnnotation = __bind(this.showNewAnnotation, this);
         this.changeInteractiveMode = __bind(this.changeInteractiveMode, this);
         this.changeDisplayMode = __bind(this.changeDisplayMode, this);
         
@@ -245,8 +265,6 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(document).on("click", ".annotation-menubar .info-control a", showAnnotationsInfoPanel);
         $(document).on("click", ".expand-pane", expandAnnotationPane);
         $(document).on("click", hideAnnotationsInfoPanel);
-        
-        Viewer.__super__.constructor.apply(this, arguments);   
     }
     
     Viewer.prototype.showAnnotations = function(annotations) {
@@ -300,10 +318,30 @@ console.time("Writing annotations");
 console.timeEnd("Writing annotations");
     };
     
+    Viewer.prototype.showNewAnnotation = function(e){
+        //id is index 0, revision is index 1
+        var id = e.annotation[0];
+        var text = e.annotation.text;
+        //could also pull this from current user "session"
+        var userId = e.annotation.userId;
+        
+        //get the element that was just highlighted
+        //Range.nodeFromXPath requires extra leading slash
+        var highlightStart = Range.nodeFromXPath("/" + e.annotation.ranges[0].start);
+        
+        //add annotation id to highlighted element
+        setAnnotationHighlightClassNames(highlightStart);
+        
+        //add .annotation-pane if it doesn't already exist, or append to an existing pane
+//TODO: couple an .annotation-pane to its text division with classes or data attributes
+        console.log("showNewAnnotation", e.annotation, highlightStart);
+    };
+    
     Viewer.prototype.saveHighlight = function(e) {
 console.log("Save highlight", e);
-    }
+    };
     
+    //TODO: explore using readOnly flag in Annotator options to create "select" mode
     Viewer.prototype.changeInteractiveMode = function(e){
 console.log("Change interactive mode to", e.target.value, this);
         var mode = e.target.value;
