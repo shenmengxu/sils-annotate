@@ -2,11 +2,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-//Override the default highlight mouseover behavior
-/*Annotator.prototype.onHighlightMouseover = function(event){
-    //console.log(event.target, $(event.target).data("annotation")); 
-};*/
-
 /*
     Data sent when adding an annotation:
     {
@@ -32,6 +27,18 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     showNewAnnotation will take the data presented by annotationEditorSubmit event and render the new annotation
     
     saveHighlight should submit the normal data, but with "text" as null
+    
+    viewer.js/LinkParser may be useful for making links work in the annotations
+/*
+ * TEST THIS OUT
+ * $(".annotator-hl").filter(function(){
+    var viewTop = $(window).scrollTop();
+    var viewBottom = viewTop + $(window).height();
+    var elementTop = $(this).offset().top;
+
+    return (elementTop >= viewTop && elementTop <= viewBottom);
+});
+ *    
 */
 
 Annotator.Plugin.Viewer = (function(_super) {
@@ -39,36 +46,54 @@ Annotator.Plugin.Viewer = (function(_super) {
     
     var annotationPanel;
     var infoPanel = '<div class="annotation-info">\
-                        <div class="info-item">Your annotations: <span id="current-user-annotations-count"></span>\
-                        <div class="info-item">All annotations: <span id="all-annotations-count"></span>\
-                        <div class="info-item">Number of users: <span id="number-of-annotators"></span>\
+                        <div class="info-item">Your annotations: <span id="current-user-annotations-count"></span></div>\
+                        <div class="info-item">All annotations: <span id="all-annotations-count"></span></div>\
+                        <div class="info-item">Number of users: <span id="number-of-annotators"></span></div>\
                     </div>';
     var menuBar =   '<div class="annotation-menubar">\
                         <div class="menu-container">\
                             <div class="mode-controls controls">\
-                                <label><input type="radio" name="annotation_mode" value="highlight" /> Highlight</label>\
-                                <label><input type="radio" name="annotation_mode" value="annotate" checked="checked" /> Annotate</label>\
-                                <label><input type="radio" name="annotation_mode" value="select" /> Select</label>\
+                                <a href="#highlight" data-mode="highlight" title="Highlight">\
+                                    <img src="/static/experiment/1/img/highlight-icon.png" alt="Highlight" />\
+                                </a>\
+                                <a href="#annotate" data-mode="annotate" class="active" title="Annotate">\
+                                    <img src="/static/experiment/1/img/annotate-icon.png" alt="Annotate" />\
+                                </a>\
+                                <a href="#select" data-mode="select" title="Select">\
+                                    <img src="/static/experiment/1/img/select-icon.png" alt="Select" />\
+                                </a>\
                             </div>\
-                            <div class="info-control controls"><a href="#annotation-info" class="info-panel-trigger">Info</a></div>\
+                            <div class="info-control controls">\
+                                <a href="#annotation-info" class="info-panel-trigger">\
+                                    <img src="/static/experiment/1/img/info-icon.png" alt="Info" />\
+                                </a>\
+                            </div>\
                             <div class="display-controls controls">\
-                                <span class="display-mode-label">Display:</span>\
-                                <label><input type="radio" name="display_mode" value="icons" /> Icons</label>\
-                                <label><input type="radio" name="display_mode" value="snippets" checked="checked" /> Snippets</label>\
-                                <label><input type="radio" name="display_mode" value="full" /> Full</label>\
+                                <a href="#icons" data-mode="icons" title="Icons">\
+                                    <img src="/static/experiment/1/img/icons-icon.png" alt="Icons" />\
+                                </a>\
+                                <a href="#snippets" data-mode="snippets" class="active" title="Snippets">\
+                                    <img src="/static/experiment/1/img/snippets-icon.png" alt="Snippets" />\
+                                </a>\
+                                <a href="#full" data-mode="full" title="Full text">\
+                                    <img src="/static/experiment/1/img/full-icon.png" alt="Full text" />\
+                                </a>\
                             </div>\
                         </div>\
-                    </div>';    
+                    </div>';
+    var measuringBlock = '<div id="measuring-block"></div>';
+    var annotationMaxHeight = 42; /* ~42px (3.8em at 11px) */
     var textDivisions;
     var focusedIds = {};
     var numberOfUsers = 0;
     var numberOfAnnotationsByCurrentUser = 0;
     var numberOfAnnotationsByAllUsers = 0;
     var displayMode = "snippets";
+    var interactiveMode = "annotate";
     
     Viewer.prototype.events = {
         "annotationsLoaded": "showAnnotations",
-        "annotationEditorSubmit": "showNewAnnotation"
+        "annotationCreated": "showNewAnnotation"
     };
     
     function getAnnotationIdFromClass(classStr, removePrefix) {
@@ -110,7 +135,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(activeIdsSelector).find(".annotator-hl").andSelf().addClass("active");
         
         var annotationInPane = $(activeIdsSelector, annotationPanel);
-        //annotationInPane.parents(".annotation-pane").stop().scrollTo(annotationInPane[0], 250);
+        annotationInPane.parents(".annotation-pane").stop().scrollTo(annotationInPane[0], 250);
     }
     
     function annotationFocus(annotations) {
@@ -159,28 +184,42 @@ Annotator.Plugin.Viewer = (function(_super) {
         return contents;
     };
     
+    function getAnnotationTextHeight(annotationText) {
+        $("#measuring-block").text(annotationText);
+        
+        var height = $("#measuring-block").height();
+        
+        $("#measuring-block").empty();
+        
+        return height;
+    }
+    
     /**
      *
      */
     function buildAnnotationContents(annotation){        
         if (annotation.highlights.length < 1 || annotation.ranges.length < 1) {
             //In the "pilot" article, there are 2 annotations with .highlights and .ranges
-            //equal to Array[0]. They were not shown originally.
+            //equal to Array[0] (i.e. empty values). They were not shown originally.
             return "";
         }
         
-        //get the annotation highlights position relative to its parent: use position() instead offset()
-        //var annotationTop = $(annotation.highlights).position().top;
+        var annotationClass = "annotation id-" + annotation.id;
+        var textHeight = getAnnotationTextHeight(annotation.text);
+        
+        if (textHeight > annotationMaxHeight) {
+            annotationClass += " long";
+        } 
+        
         
         var annotationContents = '<div class="annotation-contents">\
-                                    <div class="annotation id-' + annotation.id + '">\
+                                    <div class="' + annotationClass + '">\
                                         <img src="/static/experiment/1/img/users/' + annotation.userId + '.png" alt="" />\
                                         <span class="user-id">' + annotation.userId + '</span>\
                                         <span class="text">' + annotation.text + '</span>\
                                     </div>\
                                 </div>';
         return annotationContents;
-        //console.log("renderAnnotation", annotation);  
     };
     
     /**
@@ -228,9 +267,9 @@ Annotator.Plugin.Viewer = (function(_super) {
         $("#container").append(annotationPanel);
         $(document.body).append(menuBar);
         $(document.body).append(infoPanel);
+        $(document.body).append(measuringBlock);
         
-        console.log(this, this.element);
-        
+        //Viewer.__super__._removeEvent(".annotator-hl", "mouseover", "onHighlightMouseover");
 //What is going on here? `this` returns a Viewer object, but I can't access any of its properties
         //$(document).unbind.call(this, "mouseover", onHighlightMouseover);
         
@@ -258,27 +297,19 @@ Annotator.Plugin.Viewer = (function(_super) {
         this.showNewAnnotation = __bind(this.showNewAnnotation, this);
         this.changeInteractiveMode = __bind(this.changeInteractiveMode, this);
         this.changeDisplayMode = __bind(this.changeDisplayMode, this);
+        this.disableDefaultEvents = __bind(this.disableDefaultEvents, this);
+        
+        this.disableDefaultEvents();
         
         //attach menubar controls here...not working as part of prototype.events for some reason
-        $(document).on("click", ".annotation-menubar .mode-controls input", this.changeInteractiveMode);
-        $(document).on("click", ".annotation-menubar .display-controls input", this.changeDisplayMode);
+        $(document).on("click", ".annotation-menubar .mode-controls a", this.changeInteractiveMode);
+        $(document).on("click", ".annotation-menubar .display-controls a", this.changeDisplayMode);
         $(document).on("click", ".annotation-menubar .info-control a", showAnnotationsInfoPanel);
         $(document).on("click", ".expand-pane", expandAnnotationPane);
-        $(document).on("click", hideAnnotationsInfoPanel);
+        $(document).on("click", "#container", hideAnnotationsInfoPanel);
     }
     
     Viewer.prototype.showAnnotations = function(annotations) {
-/*
- * TEST THIS OUT
- * $(".annotator-hl").filter(function(){
-    var viewTop = $(window).scrollTop();
-    var viewBottom = viewTop + $(window).height();
-    var elementTop = $(this).offset().top;
-
-    return (elementTop >= viewTop && elementTop <= viewBottom);
-});
- *
- */
         getCounts(annotations);
         
         $("#current-user-annotations-count").text(numberOfAnnotationsByCurrentUser);
@@ -292,6 +323,12 @@ console.time("Writing annotations");
         textDivisions.each(function(index){
             //create an annotation-pane for each text division that is at its same top position
             var $this = $(this);
+            
+            //this class couples a text division (paragraph/heading/etc) with a corresponding
+            //annotation pane where its annotations will exist
+            var textDivisionClass = "annotation-pane-" + Util.uuid();
+            
+            $this.addClass(textDivisionClass);
             
             //get the top of this text block to match annotation pane top; minus 10 to compensate for padding on each .annotation-pane
             var textTop = $this.position().top + parseInt($this.css("margin-top")) + parseInt($this.css("padding-top")) - 10;
@@ -308,7 +345,7 @@ console.time("Writing annotations");
                 //build the HTML for annotation pane contents
                 var contents = buildAnnotationPane(annotations);
                 
-                annotationPanes += '<div class="annotation-pane" style="top: ' + textTop + 'px; max-height: ' + maxHeight + 'px;">'
+                annotationPanes += '<div class="annotation-pane ' + textDivisionClass + '" style="top: ' + textTop + 'px; max-height: ' + maxHeight + 'px;">'
                                         + contents +
                                     '<a href="#nogo" class="expand-pane">More</a></div>';
             }
@@ -318,41 +355,54 @@ console.time("Writing annotations");
 console.timeEnd("Writing annotations");
     };
     
-    Viewer.prototype.showNewAnnotation = function(e){
-        //id is index 0, revision is index 1
-        var id = e.annotation[0];
-        var text = e.annotation.text;
-        //could also pull this from current user "session"
-        var userId = e.annotation.userId;
-        
-        //get the element that was just highlighted
-        //Range.nodeFromXPath requires extra leading slash
-        var highlightStart = Range.nodeFromXPath("/" + e.annotation.ranges[0].start);
+    Viewer.prototype.showNewAnnotation = function(annotation){
+        var id = annotation.id;
+        var text = annotation.text;
+        var userId = AnnotationView.userId; //e.annotation.userId;
+    
+        var highlightStart = $(annotation.highlights[0]);
         
         //add annotation id to highlighted element
         setAnnotationHighlightClassNames(highlightStart);
         
-        //add .annotation-pane if it doesn't already exist, or append to an existing pane
-//TODO: couple an .annotation-pane to its text division with classes or data attributes
-        console.log("showNewAnnotation", e.annotation, highlightStart);
+        var highlightTextDivision = highlightStart.parents("h1,h2,h3,h4,h5,h6,p");
+        
+        var annotationPaneClass = highlightTextDivision[0].className;
+        
+        var annotationPane = annotationPanel.children(annotationPaneClass);
+        
+        if (annotationPane.length) {
+            //add to existing .annotation-pane
+            //TODO: figure out how to put this annotation in its right place among the existing ones
+            //idea: get count of previous .annotator-hl elements; append to annotation-pane at that spot
+            //compensate for this element being deeply nested
+        } else {
+            //add new .annotation-pane to contain this annotation
+        }
+        
+        console.log("showNewAnnotation", annotation, highlightStart);
+    };
+    
+    Viewer.prototype.disableDefaultEvents = function(e){
+        this._removeEvent(".annotator-hl", "mouseover", "onHighlightMouseover");
     };
     
     Viewer.prototype.saveHighlight = function(e) {
 console.log("Save highlight", e);
     };
     
-    //TODO: explore using readOnly flag in Annotator options to create "select" mode
     Viewer.prototype.changeInteractiveMode = function(e){
-console.log("Change interactive mode to", e.target.value, this);
-        var mode = e.target.value;
+        var link = $(e.target).parent();
+        var newInteractiveMode = link.data("mode");
         
-        if (mode === "select") {
-            //hide highlights?, disable annotating
+        
+        if (newInteractiveMode === "select") {
+            //disable annotating
             $(document).unbind({
                 "mouseup": this.annotator.checkForEndSelection,
                 "mousedown": this.annotator.checkForStartSelection
             });
-        } else if (mode === "highlight") {
+        } else if (newInteractiveMode === "highlight") {
             //allow highlighting and annotating
             $(document).unbind({
                 "mouseup": this.annotator.checkForEndSelection,
@@ -368,15 +418,24 @@ console.log("Change interactive mode to", e.target.value, this);
                 "mousedown": this.annotator.checkForStartSelection
             });
         }
+        
+        $("article").removeClass(interactiveMode).addClass(newInteractiveMode);
+        
+        $(".mode-controls .active").removeClass("active");
+        link.addClass("active");
+        
+        interactiveMode = newInteractiveMode;
     };
     
     Viewer.prototype.changeDisplayMode = function(e){
-console.log("Change display mode from", displayMode, "to", newMode);
-        var newMode = e.target.value;
+        var link = $(e.target).parent();
+        var newDisplayMode = link.data("mode");
         
-        annotationPanel.removeClass(displayMode).addClass(newMode);
+        annotationPanel.removeClass(displayMode).addClass(newDisplayMode);
         
-        displayMode = newMode;
+        $(".display-controls .active").removeClass("active");
+        link.addClass("active");        
+        displayMode = newDisplayMode;
     };
     
     function expandAnnotationPane(e){
@@ -401,14 +460,11 @@ console.log("Change display mode from", displayMode, "to", newMode);
     function showAnnotationsInfoPanel(e) {
         e.preventDefault();
         
-        $(".annotation-info").addClass("visible");
+        $(".annotation-info").toggleClass("visible");
     }
     
     function hideAnnotationsInfoPanel(e) {
-        if (!/info-panel-trigger|annotation-info/.test(e.target.className)){
-            //hide info panel when clicking anywhere that is not the "Info" link or the panel itself
-            $(".annotation-info").removeClass("visible");
-        }
+        $(".annotation-info").removeClass("visible");
     }
     
     function getCounts(annotations) {

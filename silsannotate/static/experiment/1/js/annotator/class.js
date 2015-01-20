@@ -40,7 +40,7 @@ Delegator = (function() {
     return _results;
   };
 
-  Delegator.prototype._addEvent = function(selector, event, functionName) {
+  Delegator.prototype._addEvent = function(selector, event, functionName) { 
     var closure,
       _this = this;
     closure = function() {
@@ -51,7 +51,7 @@ Delegator = (function() {
     } else {
       this.element.delegate(selector, event, closure);
     }
-    this._closures["" + selector + "/" + event + "/" + functionName] = closure;
+    this._closures["" + selector + "/" + event + "/" + functionName] = closure;      
     return this;
   };
 
