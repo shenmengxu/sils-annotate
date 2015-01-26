@@ -527,7 +527,7 @@ body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
   height: 20px;
   position: absolute;
   top: 2.2em;
-  z-index: 10000;
+  z-index: 1500;
   left: 0;  
 }
 

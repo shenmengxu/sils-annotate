@@ -66,6 +66,7 @@ Annotator.Plugin.Store = (function(_super) {
         return _this.updateAnnotation(annotation, data);
       });*****/
       //return a fake ID and _rev for testing
+      console.log("store.js would save, but is disabled for testing.");
       return this.updateAnnotation(annotation, { "id": "12345", "_rev": "67890" });
     } else {
       return this.updateAnnotation(annotation, {});

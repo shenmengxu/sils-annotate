@@ -37,7 +37,7 @@ def show_text(release_name, release_number, text_id):
         #return "{0}/{1}/{2}.html".format(release_name, release_number, text_id)
         return render_template("{0}/{1}/{2}.html".format(release_name, release_number, text_id), dir_prefix= "/" + release_name + "/" + release_number)    
     except TemplateNotFound:
-        abort(404, "Whoops, we can't find that...maybe you typed the name wrong?")
+        abort(404, "No page found at that URL.")
 
 @app.route("/store")
 def store_root():

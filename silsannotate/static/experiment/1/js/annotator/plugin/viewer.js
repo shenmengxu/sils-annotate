@@ -176,6 +176,11 @@ Annotator.Plugin.Viewer = (function(_super) {
      */
     function buildAnnotationPane(annotations){
         var contents = "";
+ 
+        //if a single annotation is passed in, put it in an array
+        if (!_.isArray(annotations)) {
+            annotations = [annotations];
+        }
         
         for(var i = 0; i < annotations.length; i++){
             contents += buildAnnotationContents(annotations[i]);
@@ -205,6 +210,8 @@ Annotator.Plugin.Viewer = (function(_super) {
         }
         
         var annotationClass = "annotation id-" + annotation.id;
+        //A potentially expensive call, as it appends to the DOM to determine the height of the annotation text
+        //In a loop, this will become a problem fast
         var textHeight = getAnnotationTextHeight(annotation.text);
         
         if (textHeight > annotationMaxHeight) {
@@ -269,10 +276,6 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(document.body).append(infoPanel);
         $(document.body).append(measuringBlock);
         
-        //Viewer.__super__._removeEvent(".annotator-hl", "mouseover", "onHighlightMouseover");
-//What is going on here? `this` returns a Viewer object, but I can't access any of its properties
-        //$(document).unbind.call(this, "mouseover", onHighlightMouseover);
-        
         //binding events elsewhere screws up the context for `this`, which
         //was used by the original code, so stick with the manual document event binding
         $(document).on("mouseenter", ".annotator-hl", function(e){
@@ -331,7 +334,9 @@ console.time("Writing annotations");
             $this.addClass(textDivisionClass);
             
             //get the top of this text block to match annotation pane top; minus 10 to compensate for padding on each .annotation-pane
-            var textTop = $this.position().top + parseInt($this.css("margin-top")) + parseInt($this.css("padding-top")) - 10;
+            var textTop = $this.position().top +
+                            parseInt($this.css("margin-top")) +
+                            parseInt($this.css("padding-top")) - 10;
             
             //get the total height of this text block to give this annotation pane a max height
             //using height() rather than outerHeight() because the extra height provided by including
@@ -358,7 +363,8 @@ console.timeEnd("Writing annotations");
     Viewer.prototype.showNewAnnotation = function(annotation){
         var id = annotation.id;
         var text = annotation.text;
-        var userId = AnnotationView.userId; //e.annotation.userId;
+        //Override annotation.userId since the research experiments do not use Annotator's permissions plugin
+        annotation.userId = AnnotationView.userId; 
     
         var highlightStart = $(annotation.highlights[0]);
         
@@ -376,11 +382,42 @@ console.timeEnd("Writing annotations");
             //TODO: figure out how to put this annotation in its right place among the existing ones
             //idea: get count of previous .annotator-hl elements; append to annotation-pane at that spot
             //compensate for this element being deeply nested
+            
+            var contents = buildAnnotationContents(annotation);          
+            
+            annotationPane.append(contents);
+            
+console.log("append to existing annotation pane", annotationPane, contents);            
+            
         } else {
+console.log("append to new annotation pane");
             //add new .annotation-pane to contain this annotation
+            //TODO: refactor!!!
+            try {
+                //get the annotation-pane number
+                var paneNumber = parseInt(/\d/.exec(annotationPaneClass)[0]);
+                var previousTextDivisionClass = "annotation-pane-" + (paneNumber - 1);
+                var textDivisionClass = "annotation-pane-" + paneNumber;
+                
+                var textTop = highlightTextDivision.position().top +
+                                parseInt(highlightTextDivision.css("margin-top")) +
+                                parseInt(highlightTextDivision.css("padding-top")) - 10;
+                                
+                var maxHeight = highlightTextDivision.height();
+                
+                var contents = buildAnnotationPane(annotation);
+                
+                annotationPane = '<div class="annotation-pane ' + textDivisionClass + '" style="top: ' + textTop + 'px; max-height: ' + maxHeight + 'px;">'
+                                        + contents +
+                                    '<a href="#nogo" class="expand-pane">More</a></div>';
+                                    
+                $("#annotation-panel ." + previousTextDivisionClass).after(annotationPane);                                    
+            } catch(e) {
+                alert("A problem occurred showing the new annotation. Refresh the page to view it.");
+            } 
         }
         
-        console.log("showNewAnnotation", annotation, highlightStart);
+//console.log("showNewAnnotation", highlightTextDivision);
     };
     
     Viewer.prototype.disableDefaultEvents = function(e){
