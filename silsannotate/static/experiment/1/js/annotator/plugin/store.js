@@ -59,15 +59,15 @@ Annotator.Plugin.Store = (function(_super) {
     var _this = this;
     if (__indexOf.call(this.annotations, annotation) < 0) {
       this.registerAnnotation(annotation);
-      /*****return this._apiRequest('create', annotation, function(data) {
+      return this._apiRequest('create', annotation, function(data) {
         if (data.id == null) {
           console.warn(Annotator._t("Warning: No ID returned from server for annotation "), annotation);
         }
         return _this.updateAnnotation(annotation, data);
-      });*****/
+      });
       //return a fake ID and _rev for testing
-      console.log("store.js would save, but is disabled for testing.");
-      return this.updateAnnotation(annotation, { "id": "12345", "_rev": "67890" });
+      //console.log("store.js would save, but is disabled for testing.");
+      //return this.updateAnnotation(annotation, { "id": Util.uuid(), "_rev": "67890" });
     } else {
       return this.updateAnnotation(annotation, {});
     }

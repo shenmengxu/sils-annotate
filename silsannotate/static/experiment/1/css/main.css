@@ -1,5 +1,7 @@
 body {
   line-height: 1.2;
+  margin:0;
+  padding:0;
 }
 
 .clearfix:before, .clearfix:after {
@@ -28,7 +30,7 @@ article.select {
 
 #annotation-panel {
   float:left;
-  width:400px;
+  width:420px;
   margin-top:50px;
   margin-left:50px;  
 }
@@ -92,8 +94,9 @@ p,h1,h2,h3,h4,h5,h6,
   display:inline-block;
   border:1px solid #999;
   background:#fff;
-  border-radius:6px;
+  border-radius:4px;
   margin-right:1em;
+  padding:0.2em;
 }
 
 .annotation-menubar .controls a.active {
@@ -104,7 +107,10 @@ p,h1,h2,h3,h4,h5,h6,
   display:inline-block;
 }
 
-
+.annotation-menubar .highlight-controls {
+  float:left;
+  margin-left:30%;
+}
 .annotation-menubar .display-controls,
 .annotation-menubar .info-control {
   float:right;
@@ -133,333 +139,45 @@ p,h1,h2,h3,h4,h5,h6,
 }
 
 /*
-body .menubar {
-  position: fixed;
-  z-index: 100;
-  text-align: right;
-  top: 0;
-  width: 800px;
-  font-family: Helvetica, arial, sans-serif;
-  border-top: none;
-  height: 20px;
-}
-body .menubar.menubar-left {
-  left: 35px;
-  text-align: left;
-  width:310px;
-}
-body .menubar.menubar-left .submenu {
-  float: left;
-}
-body .menubar.menubar-right {
-  right: 35px;
-}
-body .menubar div.submenu {
-  background: #fff;
-  border: 1px solid #333;
-  border-top: none;
-  box-shadow: 0 0px 5px #333;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-  padding-right: 5px;
-  margin-right: 5px;
-  height: 20px;
-  float: right;
-}
-body .menubar div.submenu.count {
-  font-size: 16px;
-  vertical-align: 5px;
-  cursor: help;
-}
-body .menubar div.submenu.count i {
-  padding: 0 5px;
-  color: blue;
-  padding-top: 2px;
-}
-body .menubar div.submenu ul {
-  padding: 0;
-  margin: 0 0 0 5px;
-  float: left;
-}
-body .menubar div.submenu ul li {
-  list-style-type: none;
-  float: left;
-}
-body .menubar div.submenu ul li a {
-  border-right: 1px solid #fff;
-  font-size: 14px;
-  padding: 4px 3px 3px 4px;
-  text-decoration: none;
-  cursor: pointer;
-  height: 16px;
-  padding-top: 1px;
-  display: inline-block;
-}
-body .menubar div.submenu ul li a:hover {
-  text-decoration: underline;
-  color: blue;
-}
-body .menubar div.submenu ul li a.active {
-  color: #fff;
-  background: blue;
-  font-weight: bold;
-}
-body .menubar div.submenu ul li a.active:hover {
-  text-decoration: none;
-  cursor: default;
-}
-body .menubar div.submenu ul li a.ready.disabled {
-  color: #ccc;
-  cursor: default;
-}
-body .menubar div.submenu ul li a.ready.disabled:hover {
-  text-decoration: none;
-}
-body .menubar h3 {
-  float: left;
-  margin: 0 0 0 15px;
-  font-size: 14px;
-  font-weight: bold;
-  color: blue;
-  `: helvetica, arial, sans-serif;
-}*/
-/*
-body div.annotator-wrapper {
+.annotator-wrapper {
   margin: 50px 50px 50px 100px;
 }*/
-body div.annotator-wrapper span.annotator-hl.nested-1 {
+.annotator-wrapper .annotator-hl.nested-1 {
   background: #ffffd2;
 }
-body div.annotator-wrapper span.annotator-hl.nested-2 {
+.annotator-wrapper .annotator-hl.nested-2 {
   background: #ffffb9;
 }
-body div.annotator-wrapper span.annotator-hl.nested-3 {
+.annotator-wrapper .annotator-hl.nested-3 {
   background: #ffffa8;
 }
-body div.annotator-wrapper span.annotator-hl.active {
+.annotator-wrapper .annotator-hl.active {
   background: #ffdede;
 }
-body div.annotator-wrapper span.annotator-hl.active.nested-1 {
+.annotator-wrapper .annotator-hl.active.nested-1 {
   background: #ffdede;
 }
-body div.annotator-wrapper span.annotator-hl.active.nested-2 {
+.annotator-wrapper .annotator-hl.active.nested-2 {
   background: #ffcdcd;
 }
-body div.annotator-wrapper span.annotator-hl.active.nested-3 {
+.annotator-wrapper .annotator-hl.active.nested-3 {
   background: #ffbfbf;
 }
-body div.annotator-wrapper span.annotator-hl.hidden {
+.annotator-wrapper .annotator-hl.hidden {
   background: transparent;
 }
-body div.annotator-wrapper blockquote {
+.annotator-wrapper blockquote {
   width: 500px;
 }
-body div.annotator-wrapper .text-container {
+.annotator-wrapper .text-container {
   position: relative;
   width: 600px;
 }
 
-/* original hiding styles */
-/*
-body div.annotator-wrapper .text-container.hidden div.anno-display {
-  display: none;
-}
-body div.annotator-wrapper .text-container.hidden .annotator-hl {
+/* include #container to increase specificity */
+.hide-annotations #container .annotator-wrapper .annotator-hl {
   background: transparent;
 }
-body div.annotator-wrapper .text-container.highlights-hidden .annotator-hl {
-  background: transparent;
-}*/
-
-/* A: attempt to speed up hiding */
-/*body.hidden #scrollbar,
-body.hidden .text-container .anno-display {
-  display:none;
-}
-
-body.hidden .text-container .annotator-hl,
-body.hidden .text-container.highlights-hidden .annotator-hl {
-  background:transparent;
-}*/
-
-
-/* end A */
-
-/*body div.annotator-wrapper .text-container.icons div.anno-display ul.container-states li.icons {
-  color: #333;
-  font-weight: bold;
-}
-
-body.icons div.annotator-wrapper .text-container div.anno-display ul.sils-annos li,
-body div.annotator-wrapper .text-container.icons div.anno-display ul.sils-annos li {
-  width: auto;
-  clear: none;
-  float: left;
-}*/
-/* added body.icons line to move the class up the DOM tree */
-/*body.icons div.annotator-wrapper .text-container div.anno-display ul.sils-annos li span.text,
-body div.annotator-wrapper .text-container.icons div.anno-display ul.sils-annos li span.text {
-  display: none;
-}
-
-body.icons div.annotator-wrapper .text-container div.anno-display ul.sils-annos li img,
-body div.annotator-wrapper .text-container.icons div.anno-display ul.sils-annos li img {
-  margin-right: 2px;
-}
-
-body div.annotator-wrapper .text-container.snippets div.anno-display ul.container-states li.snippets {
-  color: #333;
-  font-weight: bold;
-}
-
-body.snippets div.annotator-wrapper .text-container div.anno-display ul.sils-annos li,
-body div.annotator-wrapper .text-container.snippets div.anno-display ul.sils-annos li {
-  height: 23px;
-  min-height: 0;
-  overflow-y: hidden;
-  position: relative;
-  padding-left: 8px;
-}
-
-body.snippets div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.long,
-body div.annotator-wrapper .text-container.snippets div.anno-display ul.sils-annos li.long {
-  height: 35px;
-}
-
-body.snippets div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.long.extra-long div.more-indicator,
-body div.annotator-wrapper .text-container.snippets div.anno-display ul.sils-annos li.long.extra-long div.more-indicator {
-  display: block;
-  float: left;
-  position: absolute;
-  left: 0;
-  font-size: 12px;
-}
-
-body.snippets div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.long.extra-long div.mask,
-body div.annotator-wrapper .text-container.snippets div.anno-display ul.sils-annos li.long.extra-long div.mask {
-  background: url(../img/gradient-mask.png) bottom right;
-  bottom: 0;
-  right: 0;
-  position: absolute;
-  height: 20px;
-  width: 100%;
-}
-
-body.snippets div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.long:hover div.mask,
-body div.annotator-wrapper .text-container.snippets div.anno-display ul.sils-annos li.long:hover div.mask {
-  background: transparent;
-}
-
-body div.annotator-wrapper .text-container.full div.anno-display ul.container-states li.full {
-  color: #333;
-  font-weight: bold;
-}
-body div.annotator-wrapper .text-container.no-annos ul.container-states {
-  display: none;
-}
-body div.annotator-wrapper .text-container.no-annos div.anno-display ul.sils-annos {
-  border-top: none;
-}
-body div.annotator-wrapper .text-container div.anno-display {
-  clear: both;
-  position: absolute;
-  width: 400px;
-  top: 0;
-  left: 650px;
-  height: 100%;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.container-states {
-  font-weight: normal;
-  font-family: helvetica, arial, sans-serif;
-  position: absolute;
-  top: -25px;
-  color: #ccc;
-  right: 0;
-  padding: 0;
-  font-size: 12px;
-  margin-top: 10px;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.container-states li {
-  display: inline;
-  list-style-type: none;
-  margin-right: 5px;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.container-states li.state {
-  cursor: pointer;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.container-states li.state:hover {
-  border-top: 1px solid #ccc;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos {
-  width: 100%;
-  padding: 0;
-  margin: -3px 0 5px 5px;
-  border-top: 1px solid #ccc;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos.active li {
-  background: #fff;
-  z-index: 10;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li {
-  width: 100%;
-  padding: 2px 2px 5px 2px;
-  min-height: 25px;
-  font-weight: normal;
-  margin: 1px 0 3px 0;
-  clear: both;
-  list-style-type: none;
-  border-radius: 6px;
-  cursor: default;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.active {
-  background: lightpink;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.active img {
-  border: 1px solid red;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.active.long.extra-long {
-  height: auto;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.active.long.extra-long div.mask {
-  display: none;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li.active.long.extra-long div.more-indicator {
-  display: none;
-}
-
-body.full div.annotator-wrapper .text-container div.anno-display ul.sils-annos li div.more-indicator,
-body.icons div.annotator-wrapper .text-container div.anno-display ul.sils-annos li div.more-indicator,
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li div.more-indicator {
-  display: none;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li img {
-  margin-right: 5px;
-  height: 24px;
-  width: 24px;
-  border: 1px solid #333;
-  float: left;
-  border-radius: 6px;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li span.text {
-  padding-bottom: 4px;
-  font-family: verdana, sans-serif;
-  color: #444;
-  font-size: 11px;
-  display: block;
-  margin-left: 3px;
-}
-body div.annotator-wrapper .text-container div.anno-display ul.sils-annos li span.text span.username {
-  font-weight: bold;
-  margin-right: 4px;
-}*/
-
-/*
- * Testing scrollbar on annotation panes. 
-body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
-  overflow-y: scroll;
-  overflow-x: hidden;
-  border:1px solid green;
-}*/
 
 #annotation-panel {
   font-family: verdana, sans-serif;
@@ -503,6 +221,7 @@ body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
 #annotation-panel .annotation-contents .annotation {
   max-height:3.8em;
   overflow:hidden;
+  position:relative;
 }
 
 #annotation-panel .annotation-contents .annotation:before,
@@ -513,9 +232,24 @@ body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
 
 #annotation-panel .annotation-contents .annotation:after {
   clear: both;
+  content: " ";
+  background: url(../img/gradient-mask.png) bottom right;
+  width: 100%;
+  height: 20px;
+  position: absolute;
+  top: 2.2em;
+  z-index: 1500;
+  left: 0;    
 }
 
+#annotation-panel.full .annotation-contents .annotation:after,
+#annotation-panel .annotation-contents .active:after {
+  background: none;
+  position:static;
+  height:0;
+}
 
+/*
 #annotation-panel .annotation-contents .annotation.long {
   position:relative;
 }
@@ -533,7 +267,7 @@ body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
 
 #annotation-panel .annotation-contents .active.long:after {
   display:none;
-}
+}*/
 
 /**
  * If an annotation is active (hovered over) or if showing full text,
@@ -588,9 +322,10 @@ body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
 
 #scrollbar {
   width: 24px;
+  height:100%;
   position: fixed;
-  top: 0;
-  right: 10px;
+  top: 53px; /* hard-coded for now to fit under the .annotation-menubar */
+  right: 0;
   bottom: 0;
   background: #333;
 }
@@ -624,6 +359,6 @@ body div.annotator-wrapper .text-container:not(.no-annos) .anno-display {
  * determine if annotation text will need a class of "long" for shortening
  */
 #measuring-block {
-  /*display:none;*/
+  display:none;
   width:385px;
 }

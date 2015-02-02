@@ -63,8 +63,13 @@ Annotator.Plugin.Viewer = (function(_super) {
                                     <img src="/static/experiment/1/img/select-icon.png" alt="Select" />\
                                 </a>\
                             </div>\
+                            <div class="highlight-controls controls">\
+                                <a href="#toggle-highlights" title="Hide/show highlights">\
+                                    <img src="/static/experiment/1/img/highlights-icon.png" alt="Show/hide highlights" />\
+                                </a>\
+                            </div>\
                             <div class="info-control controls">\
-                                <a href="#annotation-info" class="info-panel-trigger">\
+                                <a href="#annotation-info" class="info-panel-trigger" title="Info">\
                                     <img src="/static/experiment/1/img/info-icon.png" alt="Info" />\
                                 </a>\
                             </div>\
@@ -81,9 +86,9 @@ Annotator.Plugin.Viewer = (function(_super) {
                             </div>\
                         </div>\
                     </div>';
-    var measuringBlock = '<div id="measuring-block"></div>';
     var annotationMaxHeight = 42; /* ~42px (3.8em at 11px) */
     var textDivisions;
+    var scrollbar;
     var focusedIds = {};
     var numberOfUsers = 0;
     var numberOfAnnotationsByCurrentUser = 0;
@@ -135,7 +140,9 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(activeIdsSelector).find(".annotator-hl").andSelf().addClass("active");
         
         var annotationInPane = $(activeIdsSelector, annotationPanel);
-        annotationInPane.parents(".annotation-pane").stop().scrollTo(annotationInPane[0], 250);
+        //annotationInPane.parents(".annotation-pane").stop().scrollTo(annotationInPane[0], 250);
+        
+        //TODO: draw the activated red line on the scrollbar
     }
     
     function annotationFocus(annotations) {
@@ -189,7 +196,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         return contents;
     };
     
-    function getAnnotationTextHeight(annotationText) {
+/*    function getAnnotationTextHeight(annotationText) {
         $("#measuring-block").text(annotationText);
         
         var height = $("#measuring-block").height();
@@ -197,7 +204,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         $("#measuring-block").empty();
         
         return height;
-    }
+    } */
     
     /**
      *
@@ -210,14 +217,6 @@ Annotator.Plugin.Viewer = (function(_super) {
         }
         
         var annotationClass = "annotation id-" + annotation.id;
-        //A potentially expensive call, as it appends to the DOM to determine the height of the annotation text
-        //In a loop, this will become a problem fast
-        var textHeight = getAnnotationTextHeight(annotation.text);
-        
-        if (textHeight > annotationMaxHeight) {
-            annotationClass += " long";
-        } 
-        
         
         var annotationContents = '<div class="annotation-contents">\
                                     <div class="' + annotationClass + '">\
@@ -274,7 +273,6 @@ Annotator.Plugin.Viewer = (function(_super) {
         $("#container").append(annotationPanel);
         $(document.body).append(menuBar);
         $(document.body).append(infoPanel);
-        $(document.body).append(measuringBlock);
         
         //binding events elsewhere screws up the context for `this`, which
         //was used by the original code, so stick with the manual document event binding
@@ -300,14 +298,18 @@ Annotator.Plugin.Viewer = (function(_super) {
         this.showNewAnnotation = __bind(this.showNewAnnotation, this);
         this.changeInteractiveMode = __bind(this.changeInteractiveMode, this);
         this.changeDisplayMode = __bind(this.changeDisplayMode, this);
+        this.toggleHighlights = __bind(this.toggleHighlights, this);
+        this.goToScrollbarClickPosition = __bind(this.goToScrollbarClickPosition, this);
         this.disableDefaultEvents = __bind(this.disableDefaultEvents, this);
         
         this.disableDefaultEvents();
         
         //attach menubar controls here...not working as part of prototype.events for some reason
         $(document).on("click", ".annotation-menubar .mode-controls a", this.changeInteractiveMode);
-        $(document).on("click", ".annotation-menubar .display-controls a", this.changeDisplayMode);
+        $(document).on("click", ".annotation-menubar .display-controls a", this.changeDisplayMode);;
+        $(document).on("click", ".annotation-menubar .highlight-controls a", this.toggleHighlights);
         $(document).on("click", ".annotation-menubar .info-control a", showAnnotationsInfoPanel);
+        $(document).on("click", "#scrollbar", this.goToScrollbarClickPosition);
         $(document).on("click", ".expand-pane", expandAnnotationPane);
         $(document).on("click", "#container", hideAnnotationsInfoPanel);
     }
@@ -356,14 +358,25 @@ console.time("Writing annotations");
             }
         });
         
-        annotationPanel.append(annotationPanes);
+        annotationPanel.append(annotationPanes);       
 console.timeEnd("Writing annotations");
+/*
+console.time("Adding .long class");
+        //expensive iteration just to add a .long class
+        annotationPanel.find(".annotation").each(function(){
+            if($(this).height() > annotationMaxHeight){
+                $(this).addClass("long");
+            }
+        });
+console.timeEnd("Adding .long class");
+*/
+        showScrollbar();
     };
     
     Viewer.prototype.showNewAnnotation = function(annotation){
         var id = annotation.id;
         var text = annotation.text;
-        //Override annotation.userId since the research experiments do not use Annotator's permissions plugin
+        //Override annotation.userId since this setup does not currently use Annotator's permissions plugin
         annotation.userId = AnnotationView.userId; 
     
         var highlightStart = $(annotation.highlights[0]);
@@ -375,22 +388,30 @@ console.timeEnd("Writing annotations");
         
         var annotationPaneClass = highlightTextDivision[0].className;
         
-        var annotationPane = annotationPanel.children(annotationPaneClass);
+        var annotationPane = annotationPanel.children("." + annotationPaneClass);
         
         if (annotationPane.length) {
             //add to existing .annotation-pane
-            //TODO: figure out how to put this annotation in its right place among the existing ones
-            //idea: get count of previous .annotator-hl elements; append to annotation-pane at that spot
-            //compensate for this element being deeply nested
+            var numberOfPreviousHighlights = 0;
+        
+            highlightTextDivision.find(".annotator-hl").each(function(){
+                if ($(this).data().annotation.id != id) {
+                    numberOfPreviousHighlights++;
+                    //keep going
+                    return true;
+                } else {
+                    //found the highlight that was just created, so stop
+                    return false;
+                }
+            });
             
-            var contents = buildAnnotationContents(annotation);          
-            
-            annotationPane.append(contents);
-            
-console.log("append to existing annotation pane", annotationPane, contents);            
+            var contents = buildAnnotationContents(annotation); 
+
+            annotationPane
+                .children(".annotation-contents:nth-child(" + numberOfPreviousHighlights + ")")
+                .after(contents);
             
         } else {
-console.log("append to new annotation pane");
             //add new .annotation-pane to contain this annotation
             //TODO: refactor!!!
             try {
@@ -417,7 +438,7 @@ console.log("append to new annotation pane");
             } 
         }
         
-//console.log("showNewAnnotation", highlightTextDivision);
+        //TODO: add the newest annotation's heatmap mark on the scrollbar
     };
     
     Viewer.prototype.disableDefaultEvents = function(e){
@@ -429,6 +450,7 @@ console.log("Save highlight", e);
     };
     
     Viewer.prototype.changeInteractiveMode = function(e){
+console.time("changeInteractiveMode");    
         var link = $(e.target).parent();
         var newInteractiveMode = link.data("mode");
         
@@ -462,18 +484,35 @@ console.log("Save highlight", e);
         link.addClass("active");
         
         interactiveMode = newInteractiveMode;
+console.timeEnd("changeInteractiveMode");         
     };
     
     Viewer.prototype.changeDisplayMode = function(e){
+console.time("changeDisplayMode");
         var link = $(e.target).parent();
         var newDisplayMode = link.data("mode");
         
         annotationPanel.removeClass(displayMode).addClass(newDisplayMode);
         
         $(".display-controls .active").removeClass("active");
-        link.addClass("active");        
+        link.addClass("active");
         displayMode = newDisplayMode;
+console.timeEnd("changeDisplayMode");        
     };
+    
+    Viewer.prototype.toggleHighlights = function(e){
+        var link = $(e.target).parent();
+        
+        $(document.body).toggleClass("hide-annotations");        
+        link.toggleClass("active");
+    }
+    
+    Viewer.prototype.goToScrollbarClickPosition = function(e){
+        //TODO: remove hard-coded 53 here; it corresponds to the #scrollbar offset from top of screen
+        var percFromTop = ((e.clientY - 53) / $("#scrollbar").height()) * 100;
+console.log("% from top: ", percFromTop)
+        $(document).scrollTo(percFromTop + "%", 500);
+    }
     
     function expandAnnotationPane(e){
         var $this = $(this);
@@ -521,6 +560,34 @@ console.log("Save highlight", e);
         });
         
         numberOfAnnotationsByCurrentUser = _.size(annotationsByThisUser);
+    }
+    
+    function showScrollbar() {
+console.time("showScrollbar");
+        //TODO: remove hard-coded 53 here
+        var availableScreenHeight = screen.height - 53; /* 53px falls below the .annotation-menubar */
+
+        scrollbar = $('<canvas id="scrollbar" width="24" height="' + availableScreenHeight + '"></canvas>');
+        $(document.body).append(scrollbar);
+        
+        var scrollbarScaleFactor = availableScreenHeight / $("html").height();
+            
+        var canvas = scrollbar[0];
+        var ctx = canvas.getContext('2d');
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = "yellow";
+        
+        var annotations = $("article .annotator-hl");
+
+        for(var i = 0; i < annotations.length; i++){
+            var elem = annotations[i];
+            var elem$ = $(elem);
+            var top = (elem$.offset().top * scrollbarScaleFactor);
+            var height = (elem$.height() * scrollbarScaleFactor);
+            
+            ctx.fillRect(0, top, 24, height);
+        }
+console.timeEnd("showScrollbar");
     }
     
     return Viewer;
