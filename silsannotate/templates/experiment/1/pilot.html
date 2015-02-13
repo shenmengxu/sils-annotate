@@ -1,6 +1,9 @@
 ﻿{% extends "{0}/layout.html".format(dir_prefix) %}
 {% block title %}Pilot 1{% endblock %}
 {% block body %}
+<script>
+    alert("{{ g.db }}");
+</script>
 <div id="container" class="clearfix">
     <article>
         <h1>Pilot Test Article</h1>
