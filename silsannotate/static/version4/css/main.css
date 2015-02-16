@@ -37,7 +37,7 @@ article.select {
   font-family: verdana, sans-serif;
   color: #444;
   font-size: 11px;
-  position:absolute;
+  position:fixed;
   left:830px;
   overflow-y:scroll;
   padding-right:10px;

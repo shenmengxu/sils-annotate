@@ -255,7 +255,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         Viewer.__super__.constructor.apply(this, arguments);
 
         //create the annotation panel DOM element that will house the annotations
-        annotationPanel = $('<div id="annotation-panel"></div>').css("height", $("article").height());
+        annotationPanel = $('<div id="annotation-panel"></div>').css("height", $(window).height() - 53);
         
         //select the DOM elements that serve as breaking points or transitions in the document
         //this list is chosen based on what makes the most sense in an article format
