@@ -18,6 +18,7 @@ article {
   max-width:600px;
   padding:50px 50px 50px 100px;
   cursor: url(../img/annotate-cursor.png), auto;
+  position:relative;
 }
 
 article.highlight {
@@ -31,10 +32,16 @@ article.select {
 #annotation-panel {
   float:left;
   width:420px;
-  margin-top:50px;
+  margin-top:70px;
   margin-left:50px;  
+  font-family: verdana, sans-serif;
+  color: #444;
+  font-size: 11px;
+  position:fixed;
+  left:830px;
+  overflow-y:scroll;
+  padding-right:10px;
 }
-
 /* DEBUG: 
 p,h1,h2,h3,h4,h5,h6,
 .annotation-pane {
@@ -126,7 +133,8 @@ p,h1,h2,h3,h4,h5,h6,
   top:3em;
   right:-200px;
   background: #ccc;
-  padding:10px 20px 10px;  
+  padding:10px 20px 10px;
+  z-index:1500;
 }
 
 .annotation-info.visible {
@@ -179,18 +187,11 @@ p,h1,h2,h3,h4,h5,h6,
   background: transparent;
 }
 
-#annotation-panel {
-  font-family: verdana, sans-serif;
-  color: #444;
-  font-size: 11px;
-  position:relative;
-}
-
 #annotation-panel .annotation-pane {
-  position:absolute;
+  /*position:absolute;
   left:0;
   overflow-y: scroll;
-  overflow-x: visible;
+  overflow-x: visible;*/
   /*border:1px solid #ccc;*/
   padding:10px 10px 0;
   width:100%;

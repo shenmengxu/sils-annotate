@@ -148,7 +148,7 @@ console.timeEnd("changeGlobalDisplayState to " + newState);
                                 + '"><span class="text"><span class="username">'
                                 + capitaliseFirstLetter(anno.userId)
                                 + '</span></span><div class="mask"></div></li>')
-            var userIconUrl = "/static/" + interfaceName + "img/users/" + anno.userId + ".png"
+            var userIconUrl = "/static/img/users/" + anno.userId + ".png"
             var userIcon = $('<img src="'+ userIconUrl +'">')
             annoLi$.prepend(userIcon)
             annoLi$.prepend("<div class='more-indicator'>+</div>")
