@@ -8,17 +8,17 @@ couch = couchdb.Server(url=os.getenv("SILS_CLOUDANT_URL"))
 
 @app.before_request
 def set_db():
-    if "study" in request.url:
+    db_name = request.args.get("db")
+
+    if "annotationstudy1-2014" == db_name:
         # For the study in 2014, this database should not change; if it does,
-        # there is a file called sils-annotate-sandbox-backup-17-11-2014 that is a copy of it
-        g.db = couch["sils-annotate-sandbox-17-11-2014"]  
-    elif ("release/2" in request.url) or ("experiment" in request.url):
-        # This is a copy of the DB from the 2014 study, but it can be altered in
-        # the new release
-        g.db = couch["sils-annotate-sandbox-2"] 
+        # there is a file called AnnotationStudy1-2014-backup that is a copy of it
+        g.db = couch["annotationstudy1-2014"]  
+    elif "annotationtest" == db_name:
+        g.db = couch["annotationtest"]  
     else:
-        # Default to "sils-annotate-sandbox"
-        g.db = couch[os.getenv("SILS_CLOUDANT_DB")]
+        # Default to playpen; is also set as environment variable, e.g. os.getenv["SILS_CLOUDANT_DB"]
+        g.db = couch["annotationplaypen"]  
     
     g.api_root = "/api"
 
@@ -31,13 +31,12 @@ def internal_error(exception):
 def hello_world():
     return 'Hello World!'
 
-@app.route('/<release_name>/<release_number>/<text_id>')
-def show_text(release_name, release_number, text_id):
+@app.route('/<interface_name>/<text_id>')
+def show_text(interface_name, text_id):
     try:
-        #return "{0}/{1}/{2}.html".format(release_name, release_number, text_id)
-        return render_template("{0}/{1}/{2}.html".format(release_name, release_number, text_id), dir_prefix= "/" + release_name + "/" + release_number)    
+        return render_template("{0}/{1}.html".format(interface_name, text_id), dir_prefix=interface_name)    
     except TemplateNotFound:
-        abort(404, "No page found at that URL.")
+        abort(404, "No page found at this URL.")
 
 @app.route("/store")
 def store_root():
@@ -50,7 +49,7 @@ def search():
     # Limit doesn't work quite right here because if you only pull back the first 10 or 20
     # they may be completely at the bottom...is there a way to group or order by document *position*
     # rather than simply ID (which takes into account time, rather than position)???
-    #view = g.db.view("main/by_textId", None, limit=limit)
+    # view = g.db.view("main/by_textId", None, limit=limit)
     '''
     "ranges": [                                # list of ranges covered by annotation (usually only one entry)
         {
