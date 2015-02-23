@@ -3,29 +3,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 /*
-    Data sent when adding an annotation:
-    {
-        "ranges":[{"start":"/p[1]",
-        "startOffset":17,
-        "end":"/p[1]",
-        "endOffset":36}],
-        "quote":"Sharon Dyas-Correia",
-        "text":"Read more about the author at http://www.google.com/?s=dyas-correia",
-        "textId":"pilot",
-        "userId":"andy"
-    }
-    
-    Response looks like:
-    [
-    "R8Ln5NHVGZK8yveSmBF5g9", 
-    "1-189c6a24eb44d26cfb76fc25e3563fbd"
-    ]
-    id is [0], _rev is [1]
-    Didn't show the new annotation, since that needs to be added
-    
-    "annotationEditorSubmit": "showNewAnnotation"
-    showNewAnnotation will take the data presented by annotationEditorSubmit event and render the new annotation
-    
     saveHighlight should submit the normal data, but with "text" as null
     
     viewer.js/LinkParser may be useful for making links work in the annotations
@@ -98,7 +75,7 @@ Annotator.Plugin.Viewer = (function(_super) {
     
     Viewer.prototype.events = {
         "annotationsLoaded": "showAnnotations",
-        "annotationCreated": "showNewAnnotation"
+        "annotationDataReady": "showNewAnnotation"
     };
     
     function getAnnotationIdFromClass(classStr, removePrefix) {
@@ -294,6 +271,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         this.disableDefaultEvents = __bind(this.disableDefaultEvents, this);
         this.bringAnnotationIntoView = __bind(this.bringAnnotationIntoView, this);
         //this.bringHighlightIntoView = __bind(this.bringHighlightIntoView, this);
+        this.saveHighlight = __bind(this.saveHighlight, this);
         
         this.disableDefaultEvents();
         
@@ -448,60 +426,30 @@ console.log(annotationTop, elementTop, topDifference);
         //add annotation id to highlighted element
         setAnnotationHighlightClassNames(highlightStart);
         
-        var highlightTextDivision = highlightStart.parents("h1,h2,h3,h4,h5,h6,p");
-        
-        var annotationPaneClass = highlightTextDivision[0].className;
-        
-        var annotationPane = annotationPanel.children("." + annotationPaneClass);
-        
-        if (annotationPane.length) {
-            //add to existing .annotation-pane
-            var numberOfPreviousHighlights = 0;
-        
-            highlightTextDivision.find(".annotator-hl").each(function(){
-                if ($(this).data().annotation.id != id) {
-                    numberOfPreviousHighlights++;
-                    //keep going
-                    return true;
-                } else {
-                    //found the highlight that was just created, so stop
-                    return false;
-                }
-            });
-            
-            var contents = buildAnnotationContents(annotation); 
+        //var highlightTextDivision = highlightStart.parents("h1,h2,h3,h4,h5,h6,p");
 
-            annotationPane
-                .children(".annotation-contents:nth-child(" + numberOfPreviousHighlights + ")")
-                .after(contents);
-            
-        } else {
-            //add new .annotation-pane to contain this annotation
-            //TODO: refactor!!!
-            try {
-                //get the annotation-pane number
-                var paneNumber = parseInt(/\d/.exec(annotationPaneClass)[0]);
-                var previousTextDivisionClass = "annotation-pane-" + (paneNumber - 1);
-                var textDivisionClass = "annotation-pane-" + paneNumber;
-                
-                var textTop = highlightTextDivision.position().top +
-                                parseInt(highlightTextDivision.css("margin-top")) +
-                                parseInt(highlightTextDivision.css("padding-top")) - 10;
-                                
-                var maxHeight = highlightTextDivision.height();
-                
-                var contents = buildAnnotationPane(annotation);
-                
-                annotationPane = '<div class="annotation-pane ' + textDivisionClass + '" style="top: ' + textTop + 'px; max-height: ' + maxHeight + 'px;">'
-                                        + contents +
-                                    '<a href="#nogo" class="expand-pane">More</a></div>';
-                                    
-                $("#annotation-panel ." + previousTextDivisionClass).after(annotationPane);                                    
-            } catch(e) {
-                alert("A problem occurred showing the new annotation. Refresh the page to view it.");
-            } 
-        }
+        //get all annotations
+        var allAnnotations = $(".annotator-hl");
+        var flattenedAnnotations = {};
+
+        var numberOfPreviousAnnotations = 0;
+
+        allAnnotations.each(function(){
+            var thisId = getAnnotationIdFromClass(this.className, true);
+
+            if(thisId == id){
+                return false;
+            } else {
+                flattenedAnnotations[thisId] = thisId
+            }
+        });
+
+        numberOfPreviousAnnotations = _.size(flattenedAnnotations);
+
+        var contents = buildAnnotationContents(annotation);
         
+        $("#annotation-panel .annotation-contents:nth-child(" + numberOfPreviousAnnotations + ")").after(contents);
+
         //TODO: add the newest annotation's heatmap mark on the scrollbar
     };
     
@@ -510,7 +458,17 @@ console.log(annotationTop, elementTop, topDifference);
     };
     
     Viewer.prototype.saveHighlight = function(e) {
-console.log("Save highlight", e);
+        var adder = this.annotator.checkForEndSelection(e);
+
+        //TODO: this probably should not rely on inspecting a style for determining success/failure
+        if(adder[0].style.display == "none"){
+            //checkForEndSelection failed to find a valid selection    
+            return;
+        } else {
+            //valid end selection
+            //submit the annotator editor without any annotation
+            this.annotator.editor.element.children("form").submit();
+        }
     };
     
     Viewer.prototype.changeInteractiveMode = function(e){

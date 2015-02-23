@@ -63,11 +63,9 @@ Annotator.Plugin.Store = (function(_super) {
         if (data.id == null) {
           console.warn(Annotator._t("Warning: No ID returned from server for annotation "), annotation);
         }
+   
         return _this.updateAnnotation(annotation, data);
       });
-      //return a fake ID and _rev for testing
-      //console.log("store.js would save, but is disabled for testing.");
-      //return this.updateAnnotation(annotation, { "id": Util.uuid(), "_rev": "67890" });
     } else {
       return this.updateAnnotation(annotation, {});
     }
@@ -105,6 +103,11 @@ Annotator.Plugin.Store = (function(_super) {
     } else {
       $.extend(annotation, data);
     }
+    //MODIFIED
+    //Custom event that publishes an event when annotation and data have merged
+    //for accessing the ID returned by the server
+    this.publish("annotationDataReady", [annotation]);
+    
     return $(annotation.highlights).data('annotation', annotation);
   };
 

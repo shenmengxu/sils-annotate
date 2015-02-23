@@ -29,6 +29,12 @@ article.select {
   cursor: auto;
 }
 
+.annotator-adder,
+.annotator-outer,
+.annotator-notice {
+    z-index: 3000;
+}
+
 #annotation-panel {
   float:left;
   width:420px;

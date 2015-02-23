@@ -13,6 +13,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "hashicorp/precise64"
 
   config.vm.provision :shell, path: "requirements.sh"
+  # config.vm.network :private_network, ip: "192.168.192.169"
   config.vm.network :forwarded_port, host: 5000, guest: 5000
 
   # Disable automatic box update checking. If you disable this, then
@@ -43,6 +44,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
+  #  config.vm.synced_folder ".", "/vagrant",
+  #          id: "core",
+  #          :nfs => true,
+  #          :mount_options => ['nolock,vers=3,udp,noatime']
+
+  config.vm.provider "virtualbox" do |vb|
+    # Set the timesync threshold to 10 seconds, instead of the default 20 minutes.
+    # If the clock gets more than 15 minutes out of sync (due to your laptop going
+    # to sleep for instance, then some 3rd party services will reject requests.
+    vb.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000]
+
+    # Prevent VMs running on Ubuntu to lose internet connection
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]            
+  end
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.

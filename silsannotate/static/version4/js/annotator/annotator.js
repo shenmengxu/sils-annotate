@@ -420,6 +420,7 @@ Annotator = (function(_super) {
     if (event && this.selectedRanges.length) {
       //ORIGINAL
       //return this.adder.css(Util.mousePosition(event, this.wrapper[0])).show();
+      //this bypasses the extra step of clicking the "create annotation button"
       //MODIFIED
       return this.adder.css(Util.mousePosition(event, this.wrapper[0])).show().find("button").click();
     } else {

@@ -2,32 +2,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-/*
-    Data sent when adding an annotation:
-    {
-        "ranges":[{"start":"/p[1]",
-        "startOffset":17,
-        "end":"/p[1]",
-        "endOffset":36}],
-        "quote":"Sharon Dyas-Correia",
-        "text":"Read more about the author at http://www.google.com/?s=dyas-correia",
-        "textId":"pilot",
-        "userId":"andy"
-    }
-    
-    Response looks like:
-    [
-    "R8Ln5NHVGZK8yveSmBF5g9", 
-    "1-189c6a24eb44d26cfb76fc25e3563fbd"
-    ]
-    id is [0], _rev is [1]
-    Didn't show the new annotation, since that needs to be added
-    
-    "annotationEditorSubmit": "showNewAnnotation"
-    showNewAnnotation will take the data presented by annotationEditorSubmit event and render the new annotation
-    
-    saveHighlight should submit the normal data, but with "text" as null
-    
+/*    
     viewer.js/LinkParser may be useful for making links work in the annotations
 /*
  * TEST THIS OUT
@@ -98,7 +73,7 @@ Annotator.Plugin.Viewer = (function(_super) {
     
     Viewer.prototype.events = {
         "annotationsLoaded": "showAnnotations",
-        "annotationCreated": "showNewAnnotation"
+        "annotationDataReady": "showNewAnnotation"
     };
     
     function getAnnotationIdFromClass(classStr, removePrefix) {
@@ -301,6 +276,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         this.toggleHighlights = __bind(this.toggleHighlights, this);
         this.goToScrollbarClickPosition = __bind(this.goToScrollbarClickPosition, this);
         this.disableDefaultEvents = __bind(this.disableDefaultEvents, this);
+        this.saveHighlight = __bind(this.saveHighlight, this);
         
         this.disableDefaultEvents();
         
@@ -446,7 +422,17 @@ console.timeEnd("Adding .long class");
     };
     
     Viewer.prototype.saveHighlight = function(e) {
-console.log("Save highlight", e);
+        var adder = this.annotator.checkForEndSelection(e);
+
+        //TODO: this probably should not rely on inspecting a style for determining success/failure
+        if(adder[0].style.display == "none"){
+            //checkForEndSelection failed to find a valid selection    
+            return;
+        } else {
+            //valid end selection
+            //submit the annotator editor without any annotation
+            this.annotator.editor.element.children("form").submit();
+        }
     };
     
     Viewer.prototype.changeInteractiveMode = function(e){

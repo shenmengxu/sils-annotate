@@ -68,10 +68,12 @@ Annotator.Editor = (function(_super) {
     Annotator.Util.preventEventDefault(event);
     _ref = this.fields;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      field = _ref[_i];
-      field.submit(field.element, this.annotation);
+        field = _ref[_i];
+        field.submit(field.element, this.annotation);
     }
+
     this.publish('save', [this.annotation]);
+
     return this.hide();
   };
 

@@ -1,5 +1,5 @@
 import json, couchdb, os, shortuuid
-
+import time
 from flask import render_template, request, make_response, g, abort
 from jinja2 import TemplateNotFound
 from silsannotate import app
@@ -8,6 +8,7 @@ couch = couchdb.Server(url=os.getenv("SILS_CLOUDANT_URL"))
 
 @app.before_request
 def set_db():
+    g.start_time = time.time()
     db_name = request.args.get("db")
 
     if "annotationstudy1-2014" == db_name:
@@ -22,6 +23,11 @@ def set_db():
     
     g.api_root = "/api"
 
+# @app.teardown_request
+# def teardown(exception=None):
+#    time_diff = time.time() - g.start_time
+#    print "Load time from before request to teardown: {0}".format(time_diff)
+
 @app.errorhandler(500)
 def internal_error(exception):
     app.logger.exception(exception)
@@ -34,9 +40,9 @@ def hello_world():
 @app.route('/<interface_name>/<text_id>')
 def show_text(interface_name, text_id):
     try:
-        return render_template("{0}/{1}.html".format(interface_name, text_id), dir_prefix=interface_name)    
+        return render_template("{0}/{1}.html".format(interface_name, text_id), dir_prefix=interface_name)
     except TemplateNotFound:
-        abort(404, "No page found at this URL.")
+        abort(404, "No page found at this URL. URLs are in the format /<interface_name>/<text_id>?user=username&db=<db_name>.")
 
 @app.route("/store")
 def store_root():
@@ -83,7 +89,11 @@ def post_new_annotation():
     doc = request.json
     doc["_id"] = shortuuid.uuid()
     couch_resp = g.db.save(doc)
+    
+    # Store plugin expects an id attribute to be returned
+    resp_object = { "id": couch_resp[0], "_rev": couch_resp[1] }
+    # resp_object = { "id": doc["_id"], "_rev": 1 }
 
-    resp = make_response(json.dumps(couch_resp, indent=4), 200)
+    resp = make_response(json.dumps(resp_object, indent=4), 200)
     resp.mimetype = "application/json"
     return resp

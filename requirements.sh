@@ -33,6 +33,6 @@ sudo pip install couchdb
 echo ">>> Installing Heroku toolbelt"
 wget -qO- https://toolbelt.heroku.com/install-ubuntu.sh | sh
 
-# find a way to set the following environment variables during vagrant up
-# export SILS_CLOUDANT_DB=""
-# export SILS_CLOUDANT_URL=""
+# can automate setting environment variables here
+#echo "export SILS_CLOUDANT_URL=" >> ~/.profile
+#echo "export SILS_CLOUDANT_DB=" >> ~/.profile

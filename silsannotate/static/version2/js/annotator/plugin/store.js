@@ -105,6 +105,10 @@ Annotator.Plugin.Store = (function(_super) {
     } else {
       $.extend(annotation, data);
     }
+    //MODIFIED
+    //Custom event that publishes an event when annotation and data have merged
+    //for accessing the ID returned by the server
+    this.publish("annotationDataReady", [annotation]);    
     return $(annotation.highlights).data('annotation', annotation);
   };
 
