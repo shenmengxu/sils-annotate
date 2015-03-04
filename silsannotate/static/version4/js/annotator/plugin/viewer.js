@@ -367,30 +367,28 @@ console.timeEnd("Writing annotations");
     //and `this` is always the .annotation element with this method
     function bringHighlightIntoView(e){
         var annotation = this;
-        var annotationTop = $(annotation).offset().top;
         var annotationId = getAnnotationIdFromClass(annotation.className);
         var annotationHighlight = $('article .' + annotationId).eq(0);
-       
-        //+43 to compensate for .menu-bar at top which could hide a highlight
-        var viewTop = $(window).scrollTop() + 43; 
-        var viewBottom = viewTop + $(window).height();
-        var elementTop = $(annotationHighlight).offset().top;
         
-        if (elementTop >= viewTop && elementTop <= viewBottom) {
-            console.log("annotation highlight in view");
-        } else {
-            console.log("annotation highlight NOT in view");
-            var topDifference = annotationTop - elementTop;
+        var annotationTop = $(annotation).offset().top;
 
-console.log(annotationTop, elementTop, topDifference);            
-            
-            //seems to work when annotation is higher than highlight,
-            //but not the other way around???
-            //$("article").css("top", topDifference);
-            $("article").velocity("stop");
-            $("article").velocity({"top": topDifference }, 500);
-        }
-        
+        //how far from the top of the document is this highlight?
+        var annotationHighlightTop = $(annotationHighlight).offset().top;
+
+        //how far has the window scrolled to bring it into view?
+        var windowScrollTop = $(window).scrollTop();
+
+        //how far from the top of the document is the annotation panel?
+        var annotationPanelTop = parseInt($("#annotation-panel").css("margin-top"));
+
+        //offset necessary to bring highlight in line with the annotation, 
+        //rather than just putting it at the top of the window
+        var offset = -(annotationTop - windowScrollTop);
+
+//console.log(annotationTop, annotationHighlightTop, windowScrollTop, offset);
+
+        annotationHighlight.velocity("scroll", { duration: 300, offset: offset });
+
         //prevent the nested <span>s from causing multiple instances to fire
         return false;
     }    
