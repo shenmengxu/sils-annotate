@@ -391,7 +391,8 @@ console.log(annotationTop, elementTop, topDifference);
             //seems to work when annotation is higher than highlight,
             //but not the other way around???
             //$("article").css("top", topDifference);
-            $("article").stop().animate({"top": topDifference }, 500);
+            $("article").velocity("stop");
+            $("article").velocity({"top": topDifference }, 500);
         }
         
         //prevent the nested <span>s from causing multiple instances to fire
@@ -400,7 +401,7 @@ console.log(annotationTop, elementTop, topDifference);
     
     function resetScroll() {
         if (window.scrollY < 50) {
-            $("article, #annotation-panel").stop().animate({"top": 0 }, 500);
+            $("article, #annotation-panel").velocity("stop").velocity({"top": 0 }, 500);
         }
     }
     
