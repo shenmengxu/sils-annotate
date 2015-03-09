@@ -101,7 +101,7 @@ p,h1,h2,h3,h4,h5,h6,
 
 .annotation-menubar .controls a.active {
   border-color:#222;
-  background:lightskyblue;
+  background:rgb(190, 233, 255);
 }
 
 .annotation-menubar .controls img {
@@ -128,6 +128,7 @@ p,h1,h2,h3,h4,h5,h6,
   right:-200px;
   background: #ccc;
   padding:10px 20px 10px;  
+  z-index:1500;
 }
 
 .annotation-info.visible {

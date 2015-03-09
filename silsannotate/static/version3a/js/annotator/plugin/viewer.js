@@ -47,8 +47,14 @@ Annotator.Plugin.Viewer = (function(_super) {
                                 </a>\
                             </div>\
                             <div class="highlight-controls controls">\
-                                <a href="#toggle-highlights" title="Hide/show highlights">\
-                                    <img src="/static/' + interfaceName + '/img/highlights-icon.png" alt="Show/hide highlights" />\
+                                <a href="#show-all-highlights" title="Show all highlights" class="active">\
+                                    <img src="/static/' + interfaceName + '/img/highlights-everyone.png" alt="Show all highlights" />\
+                                </a>\
+                                <a href="#show-my-highlights" title="Show only my highlights">\
+                                    <img src="/static/' + interfaceName + '/img/highlights-mine-only.png" alt="Show only my highlights" />\
+                                </a>\
+                                <a href="#hide-highlights" title="Hide highlights">\
+                                    <img src="/static/' + interfaceName + '/img/highlights-off-icon.png" alt="Hide highlights" />\
                                 </a>\
                             </div>\
                             <div class="info-control controls">\
@@ -251,12 +257,11 @@ Annotator.Plugin.Viewer = (function(_super) {
 //DEBUG 
         var readingSection = $('<div id="reading-section"></div>').css({
             position: "fixed",
-            top: (window.outerHeight / 3),
-            bottom: ((window.outerHeight / 3) * 2),
-            height: (window.outerHeight / 3),
-            width: 700,
-            opacity: 0.7,
-            border: "2px solid red",
+            top: (window.outerHeight / 4),
+            bottom: ((window.outerHeight / 4) * 2),
+            height: (window.outerHeight / 4),
+            width: 800,
+            opacity: 0.5,
             background: "lightblue",
             zIndex: 50
         });
@@ -447,7 +452,7 @@ console.timeEnd("Writing annotations");
     
     function keepAnnotationsInView(e){
         //return;
-        var viewportThird = window.outerHeight / 3;
+        var viewportThird = window.outerHeight / 4;
 
         if(timer !== null){
             clearTimeout(timer);
@@ -476,32 +481,29 @@ console.timeEnd("Writing annotations");
                 //get top for panel
                 var annotationPanelTop = parseInt($("#annotation-panel").css("top"));
 
-console.log("Before scroll ----------");
-console.log("Annotation panel top: ", $("#annotation-panel").offset().top);
-console.log("Annotation top: ", annotationTop); 
-console.log("Highlight top: ", highlightTop);       
-//console.log("Annotation top after scroll: ", annotationTop - (highlightTop - annotationTop));         
+//console.log("Before scroll ----------");
+//console.log("Annotation panel top: ", $("#annotation-panel").offset().top);
+//console.log("Annotation top: ", annotationTop); 
+//console.log("Highlight top: ", highlightTop);       
                 //scrollTo(<object>) puts that object at the top of the scrollbar
                 //we want it to be inline with its corresponding highlight
-                if($(window).scrollTop() !== 0){
-                    //$("#annotation-panel").stop().animate({ "top": (highlightTop - annotationTop) }, 200);    
+                if($(window).scrollTop() !== 0){ 
                     $("#annotation-panel").velocity({ 
                             top: (highlightTop - annotationTop) + annotationPanelTop
                         }, 
                         { 
                             duration: 400, 
-                            easing: [500, 30],
+                            easing: [500, 50],
                             complete: function(){
-                                console.log("After scroll ----------");
-                                console.log("Annotation panel top: ", $("#annotation-panel").offset().top);
-                                console.log("Annotation top after: ", $("#annotation-panel ." + id).offset().top);
-                                console.log("Highlight top after: ", $(highlightsInView[0]).offset().top);
+                                //console.log("After scroll ----------");
+                                //console.log("Annotation panel top: ", $("#annotation-panel").offset().top);
+                                //console.log("Annotation top after: ", $("#annotation-panel ." + id).offset().top);
+                                //console.log("Highlight top after: ", $(highlightsInView[0]).offset().top);
                             } 
                         }
                     );    
                 } else {
-                    //$("#annotation-panel").stop().animate({ "top": 0 }, 200); 
-                    $("#annotation-panel").velocity({ top: 0 }, { duration: 400, easing: [500, 30] });    
+                    $("#annotation-panel").velocity({ top: 0 }, { duration: 400, easing: [500, 50] });    
                 }
                 
             }
@@ -560,10 +562,28 @@ console.timeEnd("changeDisplayMode");
     };
     
     Viewer.prototype.toggleHighlights = function(e){
-        var link = $(e.target).parent();
+        e.preventDefault();
         
-        $(document.body).toggleClass("hide-annotations");        
-        link.toggleClass("active");
+        var link = $(e.target).parent();
+        var action = link.attr("href");
+
+        if(action == "#show-my-highlights"){
+            $(document.body).removeClass("hide-annotations");  
+
+            $(".annotator-hl").each(function(){
+                if ($(this).data().annotation.userId != AnnotationView.userId) {
+                  $(this).addClass("hidden")
+                }
+            });
+        } else if (action == "#show-all-highlights"){
+            $(document.body).removeClass("hide-annotations");  
+            $(".annotator-hl").removeClass("hidden");
+        } else {
+            $(document.body).addClass("hide-annotations");        
+        }
+        
+        link.siblings("a").removeClass("active");
+        link.addClass("active");
     }
     
     Viewer.prototype.goToScrollbarClickPosition = function(e){

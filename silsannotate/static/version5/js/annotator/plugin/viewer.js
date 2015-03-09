@@ -42,8 +42,11 @@ Annotator.Plugin.Viewer = (function(_super) {
                                 </a>\
                             </div>\
                             <div class="highlight-controls controls">\
-                                <a href="#toggle-highlights" title="Hide/show highlights">\
-                                    <img src="/static/' + interfaceName + '/img/highlights-icon.png" alt="Show/hide highlights" />\
+                                <a href="#show-highlights" title="Show highlights" class="active">\
+                                    <img src="/static/' + interfaceName + '/img/highlights-icon.png" alt="Show highlights" />\
+                                </a>\
+                                <a href="#hide-highlights" title="Hide highlights">\
+                                    <img src="/static/' + interfaceName + '/img/highlights-off-icon.png" alt="Hide highlights" />\
                                 </a>\
                             </div>\
                             <div class="info-control controls">\
@@ -73,6 +76,7 @@ Annotator.Plugin.Viewer = (function(_super) {
     var numberOfAnnotationsByAllUsers = 0;
     var displayMode = "snippets";
     var interactiveMode = "annotate";
+    var menuBarHeight;
     
     Viewer.prototype.events = {
         "annotationsLoaded": "showAnnotations",
@@ -231,35 +235,20 @@ Annotator.Plugin.Viewer = (function(_super) {
      */
     function Viewer(element, options) {
         Viewer.__super__.constructor.apply(this, arguments);
-
-        //create the annotation panel DOM element that will house the annotations
-        annotationPanel = $('<div id="annotation-panel"></div>').css("height", $(window).height() - 53);
-        
+       
         //select the DOM elements that serve as breaking points or transitions in the document
         //this list is chosen based on what makes the most sense in an article format
         textDivisions = $("p,h1,h2,h3,h4,h5,h6");
-        
-        $("#container").append(annotationPanel);
+                
         $(document.body).append(menuBar);
         $(document.body).append(infoPanel);
-
-//DEBUG
-        var readingSection = $('<div id="reading-section"></div>').css({
-            position: "fixed",
-            top: (window.outerHeight / 3),
-            bottom: ((window.outerHeight / 3) * 2),
-            height: (window.outerHeight / 3),
-            width: 900,
-            opacity: 0.7,
-            border: "2px solid red",
-            background: "lightblue",
-            zIndex: 99
-        });
-
-        $(document.body).append(readingSection);
-        $("article").css("z-index", 999);
-//DEBUG        
         
+        menuBarHeight = $(".annotation-menubar").height();
+
+        //create the annotation panel DOM element that will house the annotations
+        annotationPanel = $('<div id="annotation-panel"></div>').css("height", $(window).height() - menuBarHeight);
+
+        $("#container").append(annotationPanel);
         //binding events elsewhere screws up the context for `this`, which
         //was used by the original code, so stick with the manual document event binding
         $(document).on("mouseenter", ".annotator-hl", function(e){
@@ -289,6 +278,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         this.disableDefaultEvents = __bind(this.disableDefaultEvents, this);
         this.bringAnnotationIntoView = __bind(this.bringAnnotationIntoView, this);
         this.saveHighlight = __bind(this.saveHighlight, this);
+        //this.bringHighlightIntoView = __bind(this.bringHighlightIntoView, this);
         
         this.disableDefaultEvents();
         
@@ -298,11 +288,11 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(document).on("click", ".annotation-menubar .highlight-controls a", this.toggleHighlights);
         $(document).on("click", ".annotation-menubar .info-control a", showAnnotationsInfoPanel);
         $(document).on("click", "#scrollbar", this.goToScrollbarClickPosition);
+        //$(document).on("click", ".expand-pane", expandAnnotationPane);
         $(document).on("click", "#container", hideAnnotationsInfoPanel);
         $(document).on("click", "article .annotator-hl", this.bringAnnotationIntoView);
         $(document).on("click", "#annotation-panel .annotation", bringHighlightIntoView);
-        //$(document).on("scroll", resetScroll);
-        $(document).on("scroll", keepAnnotationsInView);
+        $(document).on("scroll", resetScroll);
     }
     
     Viewer.prototype.showAnnotations = function(annotations) {
@@ -343,40 +333,33 @@ console.timeEnd("Writing annotations");
     };
     
     Viewer.prototype.bringAnnotationIntoView = function(e){
+        //the highlight clicked
         var annotationHighlight = e.target;
-        var annotationHighlightTop = $(annotationHighlight).offset().top;
         var annotationId = getAnnotationIdFromClass(annotationHighlight.className);
+        //the corresponding annotation for this highlight
         var annotation = $('#annotation-panel .' + annotationId);
 
-console.log("annotation position inside #annotation-panel", $(annotation).position().top);
+        //how far from the top of the document is this highlight?
+        var annotationHighlightTop = $(annotationHighlight).offset().top;
 
-        $("#annotation-panel").scrollTo(annotation, function(){
-            //to compensate for .menu-bar at top which could hide an annotation subtract 50
-            var viewTop = $(window).scrollTop(); 
-            var viewBottom = viewTop + $(window).height() - 60;
-            var elementTop = $(annotation).offset().top;
+        //how far has the window scrolled to bring it into view?
+        var windowScrollTop = $(window).scrollTop();
 
-console.log("window scroll top", viewTop);
-console.log("annotation top", elementTop);
-            
-            if (elementTop >= viewTop && elementTop <= viewBottom) {
-                console.log("annotation in view");
-            } else {
-                
-                
-                console.log("annotation NOT in view");
-                var topDifference = annotationHighlightTop - elementTop;
-    
+        //how far from the top of the document is the annotation panel?
+        var annotationPanelTop = parseInt($("#annotation-panel").css("margin-top"));
 
-console.log("difference in highlight and annotation tops", topDifference);            
-                
-                //seems to work when annotation is higher than highlight,
-                //but not the other way around???
-                //$("#annotation-panel").css("top", topDifference);
-                $("#annotation-panel").stop().animate({"top": topDifference }, 500);
-    
-            }
-        });
+        //offset that the annotation panel will need to be scrolled to in order to 
+        //bring the annotation into view, rather than just putting it at the top of the window
+        var offset = -(annotationHighlightTop - windowScrollTop - annotationPanelTop);
+        
+        annotation.velocity("scroll", { duration: 300, container: $("#annotation-panel"), offset: offset });
+
+        var windowScrollBottom = windowScrollTop + $(window).height() - menuBarHeight;
+        var annotationTop = annotation.offset().top;
+
+        if(annotationTop >= windowScrollBottom && annotationTop <= windowScrollTop){
+            console.log("annotation already in view");
+        }
 
         //prevent the nested <span>s from causing multiple instances to fire
         return false;
@@ -387,73 +370,35 @@ console.log("difference in highlight and annotation tops", topDifference);
     //and `this` is always the .annotation element with this method
     function bringHighlightIntoView(e){
         var annotation = this;
-        var annotationTop = $(annotation).offset().top;
         var annotationId = getAnnotationIdFromClass(annotation.className);
         var annotationHighlight = $('article .' + annotationId).eq(0);
-       
-        //+43 to compensate for .menu-bar at top which could hide a highlight
-        var viewTop = $(window).scrollTop() + 43; 
-        var viewBottom = viewTop + $(window).height();
-        var elementTop = $(annotationHighlight).offset().top;
         
-        if (elementTop >= viewTop && elementTop <= viewBottom) {
-            console.log("annotation highlight in view");
-        } else {
-            console.log("annotation highlight NOT in view");
-            var topDifference = annotationTop - elementTop;
+        var annotationTop = $(annotation).offset().top;
 
-console.log(annotationTop, elementTop, topDifference);            
-            
-            //seems to work when annotation is higher than highlight,
-            //but not the other way around???
-            //$("article").css("top", topDifference);
-            $("article").stop().animate({"top": topDifference }, 500);
-        }
-        
+        //how far from the top of the document is this highlight?
+        var annotationHighlightTop = $(annotationHighlight).offset().top;
+
+        //how far has the window scrolled to bring it into view?
+        var windowScrollTop = $(window).scrollTop();
+
+        //how far from the top of the document is the annotation panel?
+        var annotationPanelTop = parseInt($("#annotation-panel").css("margin-top"));
+
+        //offset necessary to bring highlight in line with the annotation, 
+        //rather than just putting it at the top of the window
+        var offset = -(annotationTop - windowScrollTop);
+
+//console.log(annotationTop, annotationHighlightTop, windowScrollTop, offset);
+
+        annotationHighlight.velocity("scroll", { duration: 300, offset: offset });
+
         //prevent the nested <span>s from causing multiple instances to fire
         return false;
     }    
     
-    var timer = null;
-
-    function keepAnnotationsInView(e){
-        if(timer !== null){
-            clearTimeout(timer);
-        }
-
-        timer = setTimeout(function(){
-            var viewportThird = window.outerHeight / 3;
-            var readingSectionTop = viewportThird;
-            var readingSectionBottom = 2 * viewportThird;
-
-            var highlightsInView = $(".annotator-hl").filter(function(){
-                var elementTop = $(this).offset().top;
-
-                return (elementTop >= readingSectionTop && elementTop <= readingSectionBottom);
-            });
-
-            if(highlightsInView.length < 1){
-                return;
-            } else {
-                //$(highlightsInView[0])
-                var id = getAnnotationIdFromClass(highlightsInView[0].className);
-                //what to scroll to
-                var highlightTop = $(highlightsInView[0]).offset().top;
-                //current position of annotation in annotation panel
-                var annotationTop = $("#annotation-panel ." + id).offset().top;
-
-console.log("Annotation top: ", annotationTop); 
-console.log("Highlight top: ", highlightTop);                
-                //scrollTo(<object>) puts that object at the top of the scrollbar
-                //we want it to be inline with its corresponding highlight
-                $("#annotation-panel").scrollTo(annotationTop + highlightTop, 200);
-            }
-        }, 150);        
-    }
-
     function resetScroll() {
         if (window.scrollY < 50) {
-            $("article, #annotation-panel").stop().animate({"top": 0 }, 500);
+            $("article, #annotation-panel").velocity("stop").velocity({"top": 0 }, 500);
         }
     }
     
@@ -569,9 +514,16 @@ console.timeEnd("changeDisplayMode");
         e.preventDefault();
         
         var link = $(e.target).parent();
+        var action = link.attr("href");
+
+        if(action == "#show-highlights"){
+            $(document.body).removeClass("hide-annotations");  
+        } else {
+            $(document.body).addClass("hide-annotations");        
+        }
         
-        $(document.body).toggleClass("hide-annotations");        
-        link.toggleClass("active");
+        link.siblings("a").removeClass("active");
+        link.addClass("active");
     }
     
     Viewer.prototype.goToScrollbarClickPosition = function(e){

@@ -42,8 +42,11 @@ Annotator.Plugin.Viewer = (function(_super) {
                                 </a>\
                             </div>\
                             <div class="highlight-controls controls">\
-                                <a href="#toggle-highlights" title="Hide/show highlights">\
-                                    <img src="/static/' + interfaceName + '/img/highlights-icon.png" alt="Show/hide highlights" />\
+                                <a href="#show-highlights" title="Show highlights" class="active">\
+                                    <img src="/static/' + interfaceName + '/img/highlights-icon.png" alt="Show highlights" />\
+                                </a>\
+                                <a href="#hide-highlights" title="Hide highlights">\
+                                    <img src="/static/' + interfaceName + '/img/highlights-off-icon.png" alt="Hide highlights" />\
                                 </a>\
                             </div>\
                             <div class="info-control controls">\
@@ -511,9 +514,16 @@ console.timeEnd("changeDisplayMode");
         e.preventDefault();
         
         var link = $(e.target).parent();
+        var action = link.attr("href");
+
+        if(action == "#show-highlights"){
+            $(document.body).removeClass("hide-annotations");  
+        } else {
+            $(document.body).addClass("hide-annotations");        
+        }
         
-        $(document.body).toggleClass("hide-annotations");        
-        link.toggleClass("active");
+        link.siblings("a").removeClass("active");
+        link.addClass("active");
     }
     
     Viewer.prototype.goToScrollbarClickPosition = function(e){
