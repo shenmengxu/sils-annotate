@@ -84,6 +84,13 @@ def search():
     resp.mimetype = "application/json"
     return resp
 
+@app.route("/delete-user-andy-pilot-annotations", methods=["GET"])
+def delete_empty_annotations():
+    view = g.db.view("main/user-andy-pilot")
+    for anno in view.rows:
+        del g.db[anno["id"]]
+    return "Done"
+
 @app.route("/api/annotations", methods=["POST"])
 def post_new_annotation():
     db_name = request.args.get("db")

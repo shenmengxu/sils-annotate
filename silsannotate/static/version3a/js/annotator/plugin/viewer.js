@@ -503,7 +503,7 @@ console.timeEnd("Writing annotations");
                         }
                     );    
                 } else {
-                    $("#annotation-panel").velocity({ top: 0 }, { duration: 400, easing: [500, 50] });    
+                    $("#annotation-panel").velocity({ top: 0 }, { duration: 400, easing: [500, 0] });    
                 }
                 
             }

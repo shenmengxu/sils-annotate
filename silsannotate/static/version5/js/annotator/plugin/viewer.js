@@ -4,8 +4,13 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
 /*
     
-    saveHighlight should submit the normal data, but with "text" as null
+    Double clicking ("dblclick") is problematic for adding an annotation because it, by default, selects text to annotate or highlight (same across browsers)
+    Right clicking may be a way to bring the editor up: "click" does not trigger any e.which except 1; "mousedown" did not work either; 
+        "contextmenu" worked, but still brings up the context menu...do we want to eff with the context menu?
+    Right clicking is inconsistent: Chrome will choose the closest full word to select; Firefox does not; Safari does the same as Chrome
     
+    This file currently has extremely experimental code in it that is hacked together for a demo
+    of the highlight-annotate mode.
     viewer.js/LinkParser may be useful for making links work in the annotations
 /*
  * TEST THIS OUT
@@ -260,11 +265,18 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(document).on("mouseenter", ".annotation", function(e){
             var id = getAnnotationIdFromClass(this.className);
             var annotation = $(".annotator-hl." + id);
+            
+            if(annotation.data().annotation.userId == AnnotationView.userId && annotation.data().annotation.text.length < 1){
+                $(this).children(".text").text("edit").css({ "font-style": "italic" });
+            }
             //pass DOM elements to focus
             annotationFocus(annotation[0]);
         }).on("mouseleave", ".annotation", function(e){
             var id = getAnnotationIdFromClass(this.className);
             var annotation = $(".annotator-hl." + id);
+            if(annotation.data().annotation.userId == AnnotationView.userId && annotation.data().annotation.text.length < 1){
+                $(this).children(".text").text("").css({ "font-style": "normal" });
+            }            
             //pass DOM elements to blur           
             annotationBlur(annotation[0]);
         });
@@ -277,9 +289,8 @@ Annotator.Plugin.Viewer = (function(_super) {
         this.goToScrollbarClickPosition = __bind(this.goToScrollbarClickPosition, this);
         this.disableDefaultEvents = __bind(this.disableDefaultEvents, this);
         this.bringAnnotationIntoView = __bind(this.bringAnnotationIntoView, this);
-        this.saveHighlight = __bind(this.saveHighlight, this);
-        //this.bringHighlightIntoView = __bind(this.bringHighlightIntoView, this);
-        
+        this.saveHighlight = __bind(this.saveHighlight, this);        
+        this.editAnnotation = __bind(this.editAnnotation, this);        
         this.disableDefaultEvents();
         
         //attach menubar controls here...not working as part of prototype.events for some reason
@@ -292,6 +303,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(document).on("click", "#container", hideAnnotationsInfoPanel);
         $(document).on("click", "article .annotator-hl", this.bringAnnotationIntoView);
         $(document).on("click", "#annotation-panel .annotation", bringHighlightIntoView);
+        $(document).on("click", "#annotation-panel .annotation .text", this.editAnnotation);
         $(document).on("scroll", resetScroll);
     }
     
@@ -443,6 +455,30 @@ console.timeEnd("Writing annotations");
     Viewer.prototype.disableDefaultEvents = function(e){
         this._removeEvent(".annotator-hl", "mouseover", "onHighlightMouseover");
     };
+
+    Viewer.prototype.editAnnotation = function(e){
+        //TODO: rather than grabbing text, this should probably be a data attribute or class
+        var annotationText = $(e.target);
+        var userId = annotationText.prev(".user-id").text();
+        var editor = $("<textarea />").val(annotationText.text());
+
+
+        if(userId == AnnotationView.userId){
+            console.log(editor);
+            annotationText.after(editor);
+            annotationText.hide();
+        }
+
+        $(document).on("click.saveEditedAnnotation", function(){
+            editor.remove();
+            if(editor.val() !== "edit"){
+                annotationText.text(editor.val());
+            }
+            annotationText.show();
+            $(document).off("click.saveEditedAnnotation");
+        });
+        //this.annotator.editor.load();
+    }
     
     Viewer.prototype.saveHighlight = function(e) {
         var adder = this.annotator.checkForEndSelection(e);
