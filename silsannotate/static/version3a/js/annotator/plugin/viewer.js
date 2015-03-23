@@ -36,11 +36,8 @@ Annotator.Plugin.Viewer = (function(_super) {
     var menuBar =   '<div class="annotation-menubar">\
                         <div class="menu-container">\
                             <div class="mode-controls controls">\
-                                <a href="#highlight" data-mode="highlight" title="Highlight">\
+                                <a href="#highlight" data-mode="highlight" title="Highlight" class="active">\
                                     <img src="/static/' + interfaceName + '/img/highlight-icon.png" alt="Highlight" />\
-                                </a>\
-                                <a href="#annotate" data-mode="annotate" class="active" title="Annotate">\
-                                    <img src="/static/' + interfaceName + '/img/annotate-icon.png" alt="Annotate" />\
                                 </a>\
                                 <a href="#select" data-mode="select" title="Select">\
                                     <img src="/static/' + interfaceName + '/img/select-icon.png" alt="Select" />\
@@ -288,7 +285,8 @@ Annotator.Plugin.Viewer = (function(_super) {
             //pass DOM elements to blur           
             annotationBlur(annotation[0]);
         });
-        
+
+
         this.showAnnotations = __bind(this.showAnnotations, this);
         this.showNewAnnotation = __bind(this.showNewAnnotation, this);
         this.changeInteractiveMode = __bind(this.changeInteractiveMode, this);
@@ -297,8 +295,16 @@ Annotator.Plugin.Viewer = (function(_super) {
         this.goToScrollbarClickPosition = __bind(this.goToScrollbarClickPosition, this);
         this.disableDefaultEvents = __bind(this.disableDefaultEvents, this);
         this.saveHighlight = __bind(this.saveHighlight, this);
+        this.editAnnotation = __bind(this.editAnnotation, this);        
         
         this.disableDefaultEvents();
+
+        //set highlighting by default
+        $(document).unbind({
+            "mouseup": Annotator.checkForEndSelection
+        }).bind({
+            "mouseup": this.saveHighlight
+        }); 
         
         //attach menubar controls here...not working as part of prototype.events for some reason
         $(document).on("click", ".annotation-menubar .mode-controls a", this.changeInteractiveMode);
@@ -308,7 +314,9 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(document).on("click", "#scrollbar", this.goToScrollbarClickPosition);
         $(document).on("click", ".expand-pane", expandAnnotationPane);
         $(document).on("click", "#container", hideAnnotationsInfoPanel);
+        $(document).on("click", "#annotation-panel .annotation .text", this.editAnnotation);
         $(document).on("scroll", keepAnnotationsInView);
+
     }
     
     Viewer.prototype.showAnnotations = function(annotations) {
@@ -396,12 +404,21 @@ console.timeEnd("Writing annotations");
                 }
             });
             
-            var contents = buildAnnotationContents(annotation); 
+            var contents = $(buildAnnotationContents(annotation)); 
 
-            annotationPane
-                .children(".annotation-contents:nth-child(" + numberOfPreviousHighlights + ")")
-                .after(contents);
-            
+            if(numberOfPreviousHighlights > 0){
+                annotationPane
+                        .children(".annotation-contents:nth-child(" + numberOfPreviousHighlights + ")" )
+                        .after(contents);    
+            } else {
+                annotationPane
+                        .children(".annotation-contents")
+                        .before(contents);    
+            }
+
+            contents.css("background-color", "#3A8AA5").velocity({
+                    backgroundColor: "#ffffff"
+                }, { duration: 250 });            
         } else {
             //add new .annotation-pane to contain this annotation
             //TODO: refactor!!!
@@ -410,20 +427,18 @@ console.timeEnd("Writing annotations");
                 var paneNumber = parseInt(/\d/.exec(annotationPaneClass)[0]);
                 var previousTextDivisionClass = "annotation-pane-" + (paneNumber - 1);
                 var textDivisionClass = "annotation-pane-" + paneNumber;
-                
-                var textTop = highlightTextDivision.position().top +
-                                parseInt(highlightTextDivision.css("margin-top")) +
-                                parseInt(highlightTextDivision.css("padding-top")) - 10;
-                                
-                var maxHeight = highlightTextDivision.height();
-                
-                var contents = buildAnnotationPane(annotation);
-                
-                annotationPane = '<div class="annotation-pane ' + textDivisionClass + '" style="top: ' + textTop + 'px; max-height: ' + maxHeight + 'px;">'
-                                        + contents +
-                                    '<a href="#nogo" class="expand-pane">More</a></div>';
+               
+                var contentsHTML = buildAnnotationPane(annotation);
+                var contents = $(contentsHTML);                
+
+                annotationPane = '<div class="annotation-pane ' + textDivisionClass + '">'
+                                        + contentsHTML +
+                                 '</div>';
                                     
-                $("#annotation-panel ." + previousTextDivisionClass).after(annotationPane);                                    
+                $("#annotation-panel ." + previousTextDivisionClass).after(annotationPane);    
+                $("#annotation-panel .id-" + id).css("background-color", "#3A8AA5").velocity({
+                        backgroundColor: "#ffffff"
+                    }, { duration: 250 });            
             } catch(e) {
                 alert("A problem occurred showing the new annotation. Refresh the page to view it.");
             } 
@@ -449,6 +464,30 @@ console.timeEnd("Writing annotations");
             this.annotator.editor.element.children("form").submit();
         }
     };
+
+    Viewer.prototype.editAnnotation = function(e){
+        //TODO: rather than grabbing text, this should probably be a data attribute or class
+        var annotationText = $(e.target);
+        var userId = annotationText.prev(".user-id").text();
+        var editor = $("<textarea />").val(annotationText.text());
+
+
+        if(userId == AnnotationView.userId){
+            console.log(editor);
+            annotationText.after(editor);
+            annotationText.hide();
+        }
+
+        $(document).on("click.saveEditedAnnotation", function(){
+            editor.remove();
+            if(editor.val() !== "edit"){
+                annotationText.text(editor.val());
+            }
+            annotationText.show();
+            $(document).off("click.saveEditedAnnotation");
+        });
+        //this.annotator.editor.load();
+    }    
     
     function keepAnnotationsInView(e){
         //return;
@@ -522,14 +561,14 @@ console.time("changeInteractiveMode");
                 "mouseup": this.annotator.checkForEndSelection,
                 "mousedown": this.annotator.checkForStartSelection
             });
-        } else if (newInteractiveMode === "highlight") {
+        } else {
             //allow highlighting and annotating
             $(document).unbind({
                 "mouseup": this.annotator.checkForEndSelection,
             }).bind({
                 "mouseup": this.saveHighlight
             });
-        } else {
+        } /*else {
             //enable annotating (default)
             $(document).unbind({
                 "mouseup": this.saveHighlight
@@ -537,7 +576,7 @@ console.time("changeInteractiveMode");
                 "mouseup": this.annotator.checkForEndSelection,
                 "mousedown": this.annotator.checkForStartSelection
             });
-        }
+        }*/
         
         $("article").removeClass(interactiveMode).addClass(newInteractiveMode);
         

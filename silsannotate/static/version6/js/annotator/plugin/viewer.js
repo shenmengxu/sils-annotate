@@ -303,6 +303,7 @@ Annotator.Plugin.Viewer = (function(_super) {
         $(document).on("click", "article .annotator-hl", this.bringAnnotationIntoView);
         $(document).on("click", "#annotation-panel .annotation", bringHighlightIntoView);
         $(document).on("click", "#annotation-panel .annotation .text", this.editAnnotation);
+        $(document).on("click", "article a", openLink);
         $(document).on("scroll", resetScroll);
     }
     
@@ -644,6 +645,12 @@ console.time("showScrollbar");
 console.timeEnd("showScrollbar");
     }
     
+    function openLink(){
+        var link = this;
+
+        console.log(link.href);
+    }
+
     return Viewer;
 
 })(Annotator.Plugin);

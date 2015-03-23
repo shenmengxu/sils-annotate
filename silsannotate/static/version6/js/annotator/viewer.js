@@ -62,7 +62,15 @@ Annotator.Viewer = (function(_super) {
 
   Viewer.prototype.load = function(annotations) {
     var annotation, controller, controls, del, edit, element, field, item, link, links, list, _i, _j, _len, _len1, _ref, _ref1;
-    this.annotations = annotations || [];
+    
+    /*** MODIFIED ***/
+    //this.annotations = annotations || [];
+    //this.annotations = _.filter(annotations, function(annotation){
+    //  return annotation.userId == AnnotationView.userId;
+    //}) || [];
+    //This mostly works, but still shows part of the viewer even when the array is empty.
+    /*** END MODIFIED ***/
+
     list = this.element.find('ul:first').empty();
     _ref = this.annotations;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
