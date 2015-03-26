@@ -30,6 +30,10 @@ article.select {
   cursor: auto;
 }
 
+article img {
+  max-width:100%;
+}
+
 #annotation-panel {
   float:left;
   width:420px;

@@ -416,7 +416,7 @@ console.timeEnd("Writing annotations");
                         .before(contents);    
             }
 
-            contents.css("background-color", "#3A8AA5").velocity({
+            contents.css("background-color", "#cccccc").velocity({
                     backgroundColor: "#ffffff"
                 }, { duration: 250 });            
         } else {
@@ -436,7 +436,7 @@ console.timeEnd("Writing annotations");
                                  '</div>';
                                     
                 $("#annotation-panel ." + previousTextDivisionClass).after(annotationPane);    
-                $("#annotation-panel .id-" + id).css("background-color", "#3A8AA5").velocity({
+                $("#annotation-panel .id-" + id).css("background-color", "#cccccc").velocity({
                         backgroundColor: "#ffffff"
                     }, { duration: 250 });            
             } catch(e) {
